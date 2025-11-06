@@ -1,0 +1,145 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: bookfair-mongodb-prod
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: bookfair
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - bookfair-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/bookfair --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookfair-auth-service-prod
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_EXPIRE=15m
+      - JWT_REFRESH_EXPIRE=7d
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - bookfair-network
+    command: npm start
+
+  # Stall Service
+  # stall-service:
+  #   build:
+  #     context: ./services/stall-service
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   container_name: bookfair-stall-service-prod
+  #   restart: always
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - PORT=3002
+  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   networks:
+  #     - bookfair-network
+  #   command: npm start
+
+  # Reservation Service
+  # reservation-service:
+  #   build:
+  #     context: ./services/reservation-service
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   container_name: bookfair-reservation-service-prod
+  #   restart: always
+  #   ports:
+  #     - "3003:3003"
+  #   environment:
+  #     - PORT=3003
+  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   networks:
+  #     - bookfair-network
+  #   command: npm start
+
+  # Notification Service
+  # notification-service:
+  #   build:
+  #     context: ./services/notification-service
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   container_name: bookfair-notification-service-prod
+  #   restart: always
+  #   ports:
+  #     - "3004:3004"
+  #   environment:
+  #     - PORT=3004
+  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   networks:
+  #     - bookfair-network
+  #   command: npm start
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookfair-api-gateway-prod
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    depends_on:
+      - auth-service
+    networks:
+      - bookfair-network
+    command: npm start
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  bookfair-network:
+    driver: bridge

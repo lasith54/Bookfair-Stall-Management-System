@@ -1,0 +1,42 @@
+{
+  "name": "bookfair-backend",
+  "version": "1.0.0",
+  "description": "Bookfair Stall Management System - Backend Microservices",
+  "main": "index.js",
+  "scripts": {
+    "docker:dev": "docker-compose up --build",
+    "docker:dev:detach": "docker-compose up -d --build",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up -d --build",
+    "docker:down": "docker-compose down",
+    "docker:down:volumes": "docker-compose down -v",
+    "docker:logs": "docker-compose logs -f",
+    "docker:logs:auth": "docker-compose logs -f auth-service",
+    "docker:logs:gateway": "docker-compose logs -f api-gateway",
+    "docker:restart": "docker-compose restart",
+    "docker:seed": "docker-compose exec auth-service node /app/scripts/seed.js",
+    "db:init": "node scripts/init-database.js",
+    "db:status": "node scripts/db-status.js",
+    "dev": "concurrently \"npm run dev:auth\" \"npm run dev:gateway\"",
+    "dev:auth": "cd services/auth-service && npm run dev",
+    "dev:gateway": "cd services/api-gateway && npm run dev",
+    "install:all": "npm install && cd services/auth-service && npm install && cd ../api-gateway && npm install",
+    "start:auth": "cd services/auth-service && npm start",
+    "start:gateway": "cd services/api-gateway && npm start"
+  },
+  "keywords": [
+    "bookfair",
+    "microservices",
+    "nodejs",
+    "express",
+    "docker"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "mongoose": "^8.19.3"
+  }
+}

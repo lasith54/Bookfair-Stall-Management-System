@@ -1,0 +1,158 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: bookfair-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: bookfair
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - bookfair-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/bookfair --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-auth-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - JWT_REFRESH_SECRET=bookfair-refresh-secret-key-2025-change-in-production
+      - JWT_EXPIRE=15m
+      - JWT_REFRESH_EXPIRE=7d
+      - NODE_ENV=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./services/auth-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+  # Stall Service
+  # stall-service:
+  #   build:
+  #     context: ./services/stall-service
+  #     dockerfile: Dockerfile
+  #     target: development
+  #   container_name: bookfair-stall-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3002:3002"
+  #   environment:
+  #     - PORT=3002
+  #     - MONGO_URI=mongodb://mongodb:27017/bookfair
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./services/stall-service/src:/app/src
+  #     - /app/node_modules
+  #   networks:
+  #     - bookfair-network
+  #   command: npm run dev
+
+  # Reservation Service
+  # reservation-service:
+  #   build:
+  #     context: ./services/reservation-service
+  #     dockerfile: Dockerfile
+  #     target: development
+  #   container_name: bookfair-reservation-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3003:3003"
+  #   environment:
+  #     - PORT=3003
+  #     - MONGO_URI=mongodb://mongodb:27017/bookfair
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./services/reservation-service/src:/app/src
+  #     - /app/node_modules
+  #   networks:
+  #     - bookfair-network
+  #   command: npm run dev
+
+  # Notification Service
+  # notification-service:
+  #   build:
+  #     context: ./services/notification-service
+  #     dockerfile: Dockerfile
+  #     target: development
+  #   container_name: bookfair-notification-service
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3004:3004"
+  #   environment:
+  #     - PORT=3004
+  #     - MONGO_URI=mongodb://mongodb:27017/bookfair
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     mongodb:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./services/notification-service/src:/app/src
+  #     - /app/node_modules
+  #   networks:
+  #     - bookfair-network
+  #   command: npm run dev
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    depends_on:
+      - auth-service
+    volumes:
+      - ./services/api-gateway/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  bookfair-network:
+    driver: bridge
