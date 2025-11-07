@@ -1,9 +1,59 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Mail, Lock, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import cibfLogo from "@/assets/CIBF-Logo-Web.png";
 
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Array<{ msg: string }>;
+    };
+  };
+  message?: string;
+}
+
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      await login(formData.email, formData.password);
+      navigate("/dashboard");
+    } catch (err) {
+      const error = err as ApiError;
+      setError(
+        error.response?.data?.message || 
+        error.message || 
+        "Login failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-screen overflow-x-hidden">
       {/* Header */}
@@ -26,9 +76,6 @@ export default function LoginPage() {
                   Book Fair
                 </h2>
               </div>
-            </div>
-            <div className="flex space-x-4">
-              {/* Navigation space if needed */}
             </div>
           </div>
         </div>
@@ -85,7 +132,14 @@ export default function LoginPage() {
                   </p>
                 </div>
 
-                <form className="space-y-6">
+                {error && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   {/* Email Field */}
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -98,6 +152,8 @@ export default function LoginPage() {
                         id="email"
                         name="email"
                         required
+                        value={formData.email}
+                        onChange={handleChange}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         placeholder="Enter your email address"
                       />
@@ -116,6 +172,8 @@ export default function LoginPage() {
                         id="password"
                         name="password"
                         required
+                        value={formData.password}
+                        onChange={handleChange}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         placeholder="Enter your password"
                       />
@@ -127,8 +185,10 @@ export default function LoginPage() {
                     <div className="flex items-center">
                       <input
                         id="remember-me"
-                        name="remember-me"
+                        name="rememberMe"
                         type="checkbox"
+                        checked={formData.rememberMe}
+                        onChange={handleChange}
                         className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
@@ -144,9 +204,10 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     size="lg"
+                    disabled={isLoading}
                     className="w-full bg-blue-800 hover:bg-blue-900 text-white py-3"
                   >
-                    Sign In
+                    {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
 

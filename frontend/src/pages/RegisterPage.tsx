@@ -1,9 +1,98 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mail, Lock, User, Building, Phone, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Mail, Lock, User, Building, Phone, MapPin, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import cibfLogo from "@/assets/CIBF-Logo-Web.png";
 
+// Add error type interface
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Array<{ msg: string }>;
+    };
+  };
+  message?: string;
+}
+
 export default function RegisterPage() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+  const [formData, setFormData] = useState({
+    accountType: "vendor" as "vendor" | "publisher",
+    firstName: "",
+    lastName: "",
+    email: "",
+    contactNumber: "",
+    businessName: "",
+    address: "",
+    password: "",
+    confirmPassword: "",
+    terms: false,
+  });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (!formData.terms) {
+      setError("Please accept the terms and conditions");
+      return;
+    }
+
+    // Format phone number to include +94 if not present
+    let phoneNumber = formData.contactNumber.replace(/\s/g, '');
+    if (!phoneNumber.startsWith('+')) {
+      phoneNumber = phoneNumber.startsWith('0') 
+        ? `+94${phoneNumber.substring(1)}` 
+        : `+94${phoneNumber}`;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await register({
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+        businessName: formData.businessName,
+        contactNumber: phoneNumber,
+        address: formData.address,
+        role: formData.accountType,
+      });
+      navigate("/dashboard"); // Redirect to dashboard after registration
+    } catch (err) {
+      const error = err as ApiError;
+      setError(
+        error.response?.data?.message || 
+        error.response?.data?.errors?.[0]?.msg ||
+        error.message ||
+        "Registration failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" || type === "radio" ? (type === "checkbox" ? checked : value) : value,
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-screen overflow-x-hidden">
       {/* Header */}
@@ -26,9 +115,6 @@ export default function RegisterPage() {
                   Book Fair
                 </h2>
               </div>
-            </div>
-            <div className="flex space-x-4">
-              {/* Navigation space if needed */}
             </div>
           </div>
         </div>
@@ -102,7 +188,14 @@ export default function RegisterPage() {
                   </p>
                 </div>
 
-                <form className="space-y-6">
+                {error && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   {/* Account Type */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -111,26 +204,29 @@ export default function RegisterPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center space-x-3 p-4 border border-gray-300 rounded-md hover:border-blue-500 cursor-pointer">
                         <input
-                          id="local"
+                          id="vendor"
                           name="accountType"
                           type="radio"
-                          value="local"
+                          value="vendor"
+                          checked={formData.accountType === "vendor"}
+                          onChange={handleChange}
                           className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                          defaultChecked
                         />
-                        <label htmlFor="local" className="block text-sm font-medium text-gray-700 cursor-pointer">
+                        <label htmlFor="vendor" className="block text-sm font-medium text-gray-700 cursor-pointer">
                           Local Publisher/Vendor
                         </label>
                       </div>
                       <div className="flex items-center space-x-3 p-4 border border-gray-300 rounded-md hover:border-blue-500 cursor-pointer">
                         <input
-                          id="international"
+                          id="publisher"
                           name="accountType"
                           type="radio"
-                          value="international"
+                          value="publisher"
+                          checked={formData.accountType === "publisher"}
+                          onChange={handleChange}
                           className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                         />
-                        <label htmlFor="international" className="block text-sm font-medium text-gray-700 cursor-pointer">
+                        <label htmlFor="publisher" className="block text-sm font-medium text-gray-700 cursor-pointer">
                           International Publisher/Vendor
                         </label>
                       </div>
@@ -150,6 +246,8 @@ export default function RegisterPage() {
                           id="firstName"
                           name="firstName"
                           required
+                          value={formData.firstName}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                           placeholder="Enter your first name"
                         />
@@ -167,6 +265,8 @@ export default function RegisterPage() {
                           id="lastName"
                           name="lastName"
                           required
+                          value={formData.lastName}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                           placeholder="Enter your last name"
                         />
@@ -187,6 +287,8 @@ export default function RegisterPage() {
                           id="email"
                           name="email"
                           required
+                          value={formData.email}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                           placeholder="Enter your email address"
                         />
@@ -194,18 +296,20 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="contactNumber" className="block text-sm font-medium text-gray-700 mb-2">
                         Phone Number
                       </label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                           type="tel"
-                          id="phone"
-                          name="phone"
+                          id="contactNumber"
+                          name="contactNumber"
                           required
+                          value={formData.contactNumber}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                          placeholder="Enter your phone number"
+                          placeholder="0771234567"
                         />
                       </div>
                     </div>
@@ -223,6 +327,8 @@ export default function RegisterPage() {
                         id="businessName"
                         name="businessName"
                         required
+                        value={formData.businessName}
+                        onChange={handleChange}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         placeholder="Enter your business or organization name"
                       />
@@ -241,6 +347,8 @@ export default function RegisterPage() {
                         name="address"
                         rows={3}
                         required
+                        value={formData.address}
+                        onChange={handleChange}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
                         placeholder="Enter your complete business address"
                       ></textarea>
@@ -260,6 +368,8 @@ export default function RegisterPage() {
                           id="password"
                           name="password"
                           required
+                          value={formData.password}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                           placeholder="Create a password"
                         />
@@ -277,6 +387,8 @@ export default function RegisterPage() {
                           id="confirmPassword"
                           name="confirmPassword"
                           required
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                           placeholder="Confirm your password"
                         />
@@ -291,6 +403,8 @@ export default function RegisterPage() {
                       name="terms"
                       type="checkbox"
                       required
+                      checked={formData.terms}
+                      onChange={handleChange}
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
                     />
                     <label htmlFor="terms" className="ml-3 block text-sm text-gray-700">
@@ -306,9 +420,10 @@ export default function RegisterPage() {
                   <Button
                     type="submit"
                     size="lg"
+                    disabled={isLoading}
                     className="w-full bg-blue-800 hover:bg-blue-900 text-white py-3"
                   >
-                    Create Account
+                    {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
 
