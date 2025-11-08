@@ -1,11 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Users, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Users, MapPin, BarChart3, Calendar, FileText, Settings } from "lucide-react";
 import cibfLogo from "@/assets/CIBF-Logo-Web.png";
 import cibfBackground from "@/assets/Colombo-International-Book-Fair-2023-.jpg";
 
-export default function HomePage() {
+export default function DashboardPage() {
   const { user, logout } = useAuth();
 
   return (
@@ -25,39 +24,20 @@ export default function HomePage() {
                   Colombo International
                 </h1>
                 <h2 className="text-3xl font-bold text-blue-800 leading-tight">
-                  Book Fair
+                  Book Fair - Dashboard
                 </h2>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              {user ? (
-                // Show when user is logged in
-                <>
-                  <span className="text-gray-700">Welcome, {user.name || user.email}</span>
-                  <Button
-                    onClick={logout}
-                    variant="outline"
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 text-white border-red-600"
-                  >
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                // Show when user is not logged in
-                <>
-                  <Link to="/login">
-                    <Button variant="outline" size="lg">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button size="lg" className="bg-blue-800 hover:bg-blue-900">
-                      Register
-                    </Button>
-                  </Link>
-                </>
-              )}
+              <span className="text-gray-700">Welcome, {user?.name || user?.email}</span>
+              <Button
+                onClick={logout}
+                variant="outline"
+                size="lg"
+                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+              >
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -74,131 +54,101 @@ export default function HomePage() {
           
           <div className="relative z-10">
             <h2 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">
-              BOOK FAIR 2025
+              STALL MANAGEMENT
             </h2>
             <div className="text-2xl text-white mb-6 drop-shadow-md">
-              <p className="font-semibold">27th September to 06th October 2025</p>
-              <p>9.00 AM to 9.00 PM</p>
-            </div>
-            <div className="text-xl text-white mb-8 drop-shadow-md">
-              <p className="font-medium">Bandaranaike Memorial International Conference Hall – BMICH</p>
-              <p>Bauddhaloka Mawatha, Colombo 07, Sri Lanka</p>
+              <p className="font-semibold">Book Fair 2025 Dashboard</p>
+              <p>Manage your stall efficiently</p>
             </div>
             
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              {user ? (
-                // Show stall management buttons when logged in
-                <>
-                  <Button size="lg" className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900">
-                    Manage Stall
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    View Analytics
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Hall Map
-                  </Button>
-                </>
-              ) : (
-                // Show general buttons when not logged in
-                <>
-                  <Button size="lg" className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900">
-                    Apply Now
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Contact Now
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Hall Map
-                  </Button>
-                </>
-              )}
+              <Button size="lg" className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900">
+                Manage Stall
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
+                View Analytics
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
+                Hall Map
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* About Section */}
+        {/* Quick Stats Section */}
         <div className="mt-20 w-full">
           <div className="bg-white rounded-lg shadow-lg p-8">
             <h3 className="text-3xl font-bold text-blue-950 mb-6 text-center">
-              About Colombo International Book Fair
+              Stall Management Overview
             </h3>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              The Colombo International Book Fair (CIBF), the most popular annual book exhibition, 
-              is set to celebrate its 25th anniversary in September 2024. This milestone event will 
-              feature an array of literary and cultural activities, catering to children and readers 
-              from all walks of life. This year's fair will host over 500 exhibitors, including 
-              international participants, and will introduce thousands of new titles.
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              Originating in 1999 as a modest initiative by the Sri Lanka Book Publishers Association, 
-              the CIBF has grown into a prestigious international event, marking significant achievements 
-              for readers, authors, illustrators, editors, and translators alike.
+            <p className="text-lg text-gray-700 leading-relaxed mb-6 text-center">
+              Welcome to your stall management dashboard. Here you can monitor your booth performance, 
+              manage inventory, track sales, and coordinate with the book fair organizers.
             </p>
           </div>
         </div>
 
-        {/* Events Section */}
+        {/* Dashboard Features */}
         <div className="mt-20 w-full">
-          <h3 className="text-3xl font-bold text-blue-950 mb-8 text-center">Events</h3>
+          <h3 className="text-3xl font-bold text-blue-950 mb-8 text-center">Dashboard Features</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <BarChart3 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                Sales Analytics
+              </h4>
+              <p className="text-gray-600">
+                Track your daily sales, revenue trends, and performance metrics in real-time.
+              </p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <FileText className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                Inventory Management
+              </h4>
+              <p className="text-gray-600">
+                Manage your book inventory, stock levels, and update product information.
+              </p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <Calendar className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+              <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                Event Schedule
+              </h4>
+              <p className="text-gray-600">
+                View upcoming events, book launches, and important announcements.
+              </p>
+            </div>
+            
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <MapPin className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Book Launches
+                Stall Information
               </h4>
               <p className="text-gray-600">
-                Discover new titles and meet authors during exciting book launch events throughout the fair.
+                View your stall location, size, and facility details within the fair.
               </p>
             </div>
             
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
               <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Discussion Sessions with Writers
+                Customer Insights
               </h4>
               <p className="text-gray-600">
-                Engage in meaningful conversations with renowned authors and literary figures.
+                Analyze visitor patterns and customer demographics for your stall.
               </p>
             </div>
             
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <Settings className="h-12 w-12 text-blue-600 mx-auto mb-4" />
               <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Musical Programs & Stage Dramas
+                Settings & Support
               </h4>
               <p className="text-gray-600">
-                Enjoy cultural performances including music and theatrical presentations.
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <MapPin className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                "Katapath Pawura"
-              </h4>
-              <p className="text-gray-600">
-                A creative space where visitors can note their poems and verses.
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Kids Activities
-              </h4>
-              <p className="text-gray-600">
-                Painting, clay work, dramas, and puppet shows for children.
-              </p>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-lg shadow-md">
-              <MapPin className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Award Ceremonies
-              </h4>
-              <p className="text-gray-600">
-                Swarnapusthaka and Rajathapusthaka Awards for literature excellence.
+                Configure your preferences and get support from fair organizers.
               </p>
             </div>
           </div>
@@ -206,7 +156,7 @@ export default function HomePage() {
 
         {/* Event Details Section */}
         <div className="mt-20 bg-gray-900 text-white rounded-2xl shadow-lg p-8 w-full">
-          <h3 className="text-3xl font-bold mb-8 text-center">Event Details</h3>
+          <h3 className="text-3xl font-bold mb-8 text-center">Fair Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-400">27th Sep - 06th Oct</div>
@@ -245,11 +195,11 @@ export default function HomePage() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <div className="text-gray-400 space-y-2">
-                <p><a href="#home" className="hover:text-white">Home</a></p>
-                <p><a href="#about" className="hover:text-white">About</a></p>
-                <p><a href="#events" className="hover:text-white">Events</a></p>
-                <p><a href="#gallery" className="hover:text-white">Photo Gallery</a></p>
-                <p><a href="#contact" className="hover:text-white">Contact</a></p>
+                <p><a href="#dashboard" className="hover:text-white">Dashboard</a></p>
+                <p><a href="#analytics" className="hover:text-white">Analytics</a></p>
+                <p><a href="#inventory" className="hover:text-white">Inventory</a></p>
+                <p><a href="#settings" className="hover:text-white">Settings</a></p>
+                <p><a href="#support" className="hover:text-white">Support</a></p>
               </div>
             </div>
             <div>

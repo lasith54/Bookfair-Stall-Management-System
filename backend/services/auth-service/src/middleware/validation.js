@@ -33,8 +33,8 @@ const registerValidation = [
     .trim()
     .notEmpty()
     .withMessage('Contact number is required')
-    .matches(/^[0-9]{10}$/)
-    .withMessage('Contact number must be 10 digits'),
+    .matches(/^(\+94[0-9]{9}|[0-9]{10})$/)
+    .withMessage('Contact number must be a valid Sri Lankan phone number (+94xxxxxxxxx or 0xxxxxxxxx)'),
   body('businessName')
     .optional()
     .trim(),

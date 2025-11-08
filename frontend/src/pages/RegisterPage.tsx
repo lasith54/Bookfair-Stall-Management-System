@@ -69,7 +69,7 @@ export default function RegisterPage() {
         address: formData.address,
         role: formData.accountType,
       });
-      navigate("/dashboard"); // Redirect to dashboard after registration
+      navigate("/");
     } catch (err) {
       const error = err as ApiError;
       setError(

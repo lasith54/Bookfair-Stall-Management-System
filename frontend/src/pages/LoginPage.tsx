@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       const error = err as ApiError;
       setError(
