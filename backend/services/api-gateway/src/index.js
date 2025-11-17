@@ -75,7 +75,7 @@ app.use(
   })
 );
 
-// Stall Service Proxy (will be implemented in Phase 2)
+// Stall Service Proxy
 app.use(
   '/api/stalls',
   createProxyMiddleware({
@@ -83,12 +83,48 @@ app.use(
     changeOrigin: true,
     onProxyReq: (proxyReq, req, res) => {
       console.log(`[Stall Service] ${req.method} ${req.path}`);
+      
+      // Re-stream the body if it was parsed by express.json()
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
     },
     onError: (err, req, res) => {
       console.error('Stall Service Error:', err.message);
       res.status(503).json({
         success: false,
         message: 'Stall service is currently unavailable',
+        error: err.message,
+      });
+    },
+  })
+);
+
+// Category Service Proxy (part of stall service)
+app.use(
+  '/api/categories',
+  createProxyMiddleware({
+    target: services.stall.url,
+    changeOrigin: true,
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`[Category Service] ${req.method} ${req.path}`);
+      
+      // Re-stream the body if it was parsed by express.json()
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    },
+    onError: (err, req, res) => {
+      console.error('Category Service Error:', err.message);
+      res.status(503).json({
+        success: false,
+        message: 'Category service is currently unavailable',
         error: err.message,
       });
     },

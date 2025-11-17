@@ -47,25 +47,25 @@ services:
     command: npm start
 
   # Stall Service
-  # stall-service:
-  #   build:
-  #     context: ./services/stall-service
-  #     dockerfile: Dockerfile
-  #     target: production
-  #   container_name: bookfair-stall-service-prod
-  #   restart: always
-  #   ports:
-  #     - "3002:3002"
-  #   environment:
-  #     - PORT=3002
-  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
-  #     - NODE_ENV=production
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #   networks:
-  #     - bookfair-network
-  #   command: npm start
+  stall-service:
+    build:
+      context: ./services/stall-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookfair-stall-service-prod
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - bookfair-network
+    command: npm start
 
   # Reservation Service
   # reservation-service:
