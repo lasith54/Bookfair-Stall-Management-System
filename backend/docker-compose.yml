@@ -60,6 +60,7 @@ services:
     environment:
       - PORT=3002
       - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
       - NODE_ENV=development
     depends_on:
       mongodb:
@@ -72,28 +73,32 @@ services:
     command: npm run dev
 
   # Reservation Service
-  # reservation-service:
-  #   build:
-  #     context: ./services/reservation-service
-  #     dockerfile: Dockerfile
-  #     target: development
-  #   container_name: bookfair-reservation-service
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3003:3003"
-  #   environment:
-  #     - PORT=3003
-  #     - MONGO_URI=mongodb://mongodb:27017/bookfair
-  #     - NODE_ENV=development
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./services/reservation-service/src:/app/src
-  #     - /app/node_modules
-  #   networks:
-  #     - bookfair-network
-  #   command: npm run dev
+  reservation-service:
+    build:
+      context: ./services/reservation-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-reservation-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - NODE_ENV=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      stall-service:
+        condition: service_started
+    volumes:
+      - ./services/reservation-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
 
   # Notification Service
   # notification-service:

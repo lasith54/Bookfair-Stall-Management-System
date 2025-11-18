@@ -59,6 +59,7 @@ services:
     environment:
       - PORT=3002
       - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:-bookfair-secret-key-2025-change-in-production}
       - NODE_ENV=production
     depends_on:
       mongodb:
