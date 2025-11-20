@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{subject}}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #4CAF50;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #4CAF50;
+      margin: 0;
+      font-size: 28px;
+    }
+    .content {
+      margin-bottom: 30px;
+    }
+    .info-box {
+      background-color: #f9f9f9;
+      border-left: 4px solid #4CAF50;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .info-value {
+      color: #333;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .footer {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #777;
+      font-size: 12px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .status-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Bookfair Stall Management</h1>
+    </div>
+    
+    <div class="content">
+      <h2>Reservation Created Successfully!</h2>
+      
+      <p>Dear {{user.name}},</p>
+      
+      <p>Thank you for your reservation request. Your reservation has been successfully created and is pending approval.</p>
+      
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Reservation Number:</span>
+          <span class="info-value">{{reservation.reservationNumber}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Stall Name:</span>
+          <span class="info-value">{{reservation.stall.name}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Start Date:</span>
+          <span class="info-value">{{formatDate reservation.startDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">End Date:</span>
+          <span class="info-value">{{formatDate reservation.endDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration:</span>
+          <span class="info-value">{{reservation.duration}} days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Amount:</span>
+          <span class="info-value">{{formatCurrency reservation.totalAmount}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status:</span>
+          <span class="info-value">
+            <span class="status-badge status-pending">Pending Approval</span>
+          </span>
+        </div>
+      </div>
+      
+      <p><strong>Next Steps:</strong></p>
+      <ul>
+        <li>Your reservation will be reviewed by our team</li>
+        <li>You will receive a notification once it's approved or rejected</li>
+        <li>If approved, you will need to confirm your reservation and make payment</li>
+      </ul>
+      
+      <p>If you have any questions, please don't hesitate to contact us.</p>
+    </div>
+    
+    <div class="footer">
+      <p>This is an automated email. Please do not reply to this message.</p>
+      <p>&copy; 2024 Bookfair Management System. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
