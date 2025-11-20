@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{subject}}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #2196F3;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #2196F3;
+      margin: 0;
+      font-size: 28px;
+    }
+    .content {
+      margin-bottom: 30px;
+    }
+    .success-icon {
+      text-align: center;
+      font-size: 60px;
+      color: #2196F3;
+      margin: 20px 0;
+    }
+    .info-box {
+      background-color: #f9f9f9;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .info-value {
+      color: #333;
+    }
+    .qr-code {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .qr-code img {
+      max-width: 300px;
+      border: 2px solid #2196F3;
+      border-radius: 8px;
+      padding: 10px;
+      background-color: white;
+    }
+    .footer {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #777;
+      font-size: 12px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #cfe2ff;
+      color: #084298;
+    }
+    .important-note {
+      background-color: #fff3cd;
+      border: 2px solid #ffc107;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Bookfair Stall Management</h1>
+    </div>
+    
+    <div class="success-icon">🎫</div>
+    
+    <div class="content">
+      <h2 style="text-align: center; color: #2196F3;">Reservation Confirmed - Your QR Code</h2>
+      
+      <p>Dear {{user.name}},</p>
+      
+      <p>Congratulations! Your stall reservation has been <strong>confirmed</strong> and payment has been received.</p>
+      
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Reservation Number:</span>
+          <span class="info-value">{{reservation.reservationNumber}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Stall Name:</span>
+          <span class="info-value">{{reservation.stall.name}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Start Date:</span>
+          <span class="info-value">{{formatDate reservation.startDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">End Date:</span>
+          <span class="info-value">{{formatDate reservation.endDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration:</span>
+          <span class="info-value">{{reservation.duration}} days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Amount Paid:</span>
+          <span class="info-value">{{formatCurrency reservation.totalAmount}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status:</span>
+          <span class="info-value">
+            <span class="status-badge">Confirmed</span>
+          </span>
+        </div>
+      </div>
+      
+      <div class="important-note">
+        <h3 style="margin-top: 0; color: #856404;">⚠️ Important: Save Your QR Code</h3>
+        <p style="margin: 0;">Please save this QR code. You will need to present it at the venue for entry. You can also download it from your account dashboard.</p>
+      </div>
+      
+      <div class="qr-code">
+        <h3>Your Entry QR Code</h3>
+        {{#if metadata.qrCodeImage}}
+        <img src="{{metadata.qrCodeImage}}" alt="QR Code for {{reservation.reservationNumber}}" />
+        {{/if}}
+        <p style="font-size: 14px; color: #666; margin-top: 15px;">
+          This QR code is valid until {{formatDate metadata.qrCodeExpiry}}
+        </p>
+      </div>
+      
+      <p><strong>What to do next:</strong></p>
+      <ul>
+        <li>Save or print this QR code</li>
+        <li>Bring the QR code (digital or printed) to the venue</li>
+        <li>Present it at the registration desk for verification</li>
+        <li>Collect your stall keys and setup instructions</li>
+      </ul>
+      
+      <p><strong>Important Reminders:</strong></p>
+      <ul>
+        <li>Arrive at least 30 minutes before your start time</li>
+        <li>Bring a valid ID for verification</li>
+        <li>Review the stall setup guidelines in your account</li>
+      </ul>
+      
+      <p>We look forward to seeing you at the event!</p>
+    </div>
+    
+    <div class="footer">
+      <p>This is an automated email. Please do not reply to this message.</p>
+      <p>&copy; 2024 Bookfair Management System. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

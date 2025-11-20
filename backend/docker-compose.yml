@@ -101,28 +101,39 @@ services:
     command: npm run dev
 
   # Notification Service
-  # notification-service:
-  #   build:
-  #     context: ./services/notification-service
-  #     dockerfile: Dockerfile
-  #     target: development
-  #   container_name: bookfair-notification-service
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3004:3004"
-  #   environment:
-  #     - PORT=3004
-  #     - MONGO_URI=mongodb://mongodb:27017/bookfair
-  #     - NODE_ENV=development
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./services/notification-service/src:/app/src
-  #     - /app/node_modules
-  #   networks:
-  #     - bookfair-network
-  #   command: npm run dev
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-notification-service
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - NODE_ENV=development
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+      - SMTP_FROM=noreply@bookfair.com
+      - QR_SECRET_KEY=qr-encryption-secret-key-2025-change-in-production
+      - QR_CODE_SIZE=300
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      reservation-service:
+        condition: service_started
+    volumes:
+      - ./services/notification-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
 
   # API Gateway
   api-gateway:

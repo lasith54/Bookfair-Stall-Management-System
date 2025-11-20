@@ -69,46 +69,63 @@ services:
     command: npm start
 
   # Reservation Service
-  # reservation-service:
-  #   build:
-  #     context: ./services/reservation-service
-  #     dockerfile: Dockerfile
-  #     target: production
-  #   container_name: bookfair-reservation-service-prod
-  #   restart: always
-  #   ports:
-  #     - "3003:3003"
-  #   environment:
-  #     - PORT=3003
-  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
-  #     - NODE_ENV=production
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #   networks:
-  #     - bookfair-network
-  #   command: npm start
+  reservation-service:
+    build:
+      context: ./services/reservation-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookfair-reservation-service-prod
+    restart: always
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:-bookfair-secret-key-2025-change-in-production}
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      stall-service:
+        condition: service_started
+    networks:
+      - bookfair-network
+    command: npm start
 
   # Notification Service
-  # notification-service:
-  #   build:
-  #     context: ./services/notification-service
-  #     dockerfile: Dockerfile
-  #     target: production
-  #   container_name: bookfair-notification-service-prod
-  #   restart: always
-  #   ports:
-  #     - "3004:3004"
-  #   environment:
-  #     - PORT=3004
-  #     - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
-  #     - NODE_ENV=production
-  #   depends_on:
-  #     mongodb:
-  #       condition: service_healthy
-  #   networks:
-  #     - bookfair-network
-  #   command: npm start
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+      target: production
+    container_name: bookfair-notification-service-prod
+    restart: always
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/bookfair?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:-bookfair-secret-key-2025-change-in-production}
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - QR_SECRET_KEY=${QR_SECRET_KEY}
+      - QR_CODE_SIZE=${QR_CODE_SIZE:-300}
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      reservation-service:
+        condition: service_started
+    networks:
+      - bookfair-network
+    command: npm start
 
   # API Gateway
   api-gateway:
@@ -131,6 +148,9 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=100
     depends_on:
       - auth-service
+      - stall-service
+      - reservation-service
+      - notification-service
     networks:
       - bookfair-network
     command: npm start
