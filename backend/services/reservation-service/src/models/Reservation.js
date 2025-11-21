@@ -80,11 +80,11 @@ const reservationSchema = new mongoose.Schema({
     type: Date
   },
   
-  // Status
+  // Status (Simplified flow: only confirmed, cancelled, completed)
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected', 'confirmed', 'cancelled', 'completed'],
-    default: 'pending'
+    enum: ['confirmed', 'cancelled', 'completed'],
+    default: 'confirmed'
   },
   
   // Approval
@@ -129,17 +129,14 @@ reservationSchema.pre('save', function(next) {
     this.duration = Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
   
-  // Calculate remaining amount
-  this.remainingAmount = this.totalAmount - this.paidAmount;
-  
   next();
 });
 
-// Check for overlapping reservations
+// Check for overlapping reservations (only check confirmed reservations in simplified flow)
 reservationSchema.statics.checkAvailability = async function(stallId, startDate, endDate, excludeReservationId = null) {
   const query = {
     stallId,
-    status: { $in: ['pending', 'approved', 'confirmed'] },
+    status: 'confirmed', // Only confirmed reservations block availability
     $or: [
       {
         startDate: { $lte: endDate },
@@ -165,7 +162,6 @@ reservationSchema.index({ stallId: 1 });
 reservationSchema.index({ reservationNumber: 1 }, { unique: true });
 reservationSchema.index({ status: 1 });
 reservationSchema.index({ startDate: 1, endDate: 1 });
-reservationSchema.index({ paymentStatus: 1 });
 reservationSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('Reservation', reservationSchema);

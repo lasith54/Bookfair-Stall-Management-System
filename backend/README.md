@@ -1,134 +1,110 @@
 # Bookfair Stall Management System - Backend
 
-Microservices backend for stall management using Node.js, Express, and MongoDB.
+Microservices-based backend for managing book fair stalls, reservations, and notifications.
+
+## Prerequisites
+
+- Docker & Docker Compose
+- Node.js 18+
 
 ## Quick Start
 
-### Prerequisites
-- Docker & Docker Compose
-- Node.js 18+ (for running scripts outside Docker)
-
-### Start Services
-
 ```bash
-# Start all services
+# 1. Start all services
 npm run docker:dev
 
-# View logs
-npm run docker:logs
-
-# Stop services
-npm run docker:down
-```
-
-Services will be available at:
-- API Gateway: http://localhost:3000
-- Auth Service: http://localhost:3001
-- MongoDB: localhost:27017
-
-### Initialize Database
-
-```bash
-# Create collections and indexes
-# Run the seed script (creates default accounts)
+# 2. Initialize database (first time only)
 npm run db:init
 
-# Check database status
-npm run db:status
+# 3. Seed with sample data
+npm run db:seed
 ```
 
-### Test Credentials
+**Services running at:**
+- API Gateway: http://localhost:3000
+- Auth Service: http://localhost:3001
+- Stall Service: http://localhost:3002
+- Reservation Service: http://localhost:3003
+- Notification Service: http://localhost:3004
+
+## Test Credentials
+
+After seeding, login with:
 
 ```
 Admin:     admin@bookfair.com / Admin@123
 Employee:  employee@bookfair.com / Employee@123
-Vendor:    vendor@example.com / Vendor@123
-Publisher: publisher@example.com / Publisher@123
+Vendor:    vendor1@example.com / Vendor@123
+Publisher: publisher1@example.com / Publisher@123
 ```
-
-## API Usage
-
-### Register User
-```bash
-POST http://localhost:3000/api/auth/register
-Content-Type: application/json
-
-{
-  "email": "user@example.com",
-  "password": "Password@123",
-  "name": "John Doe",
-  "businessName": "ABC Books",
-  "contactNumber": "+94771234567",
-  "address": "123 Main St, Colombo",
-  "role": "vendor"
-}
-```
-
-### Login
-```bash
-POST http://localhost:3000/api/auth/login
-Content-Type: application/json
-
-{
-  "email": "vendor@example.com",
-  "password": "Vendor@123"
-}
-```
-
-### Get Profile (Protected)
-```bash
-GET http://localhost:3000/api/auth/profile
-Authorization: Bearer YOUR_ACCESS_TOKEN
-```
-
-## Architecture
-
-**Microservices:**
-- **API Gateway** (3000) - Request routing & rate limiting
-- **Auth Service** (3001) - Authentication & user management
-- **Stall Service** (3002) - Stall management
-- **Reservation Service** (3003) - Booking management
-- **Notification Service** (3004) - Email notifications
-
-**Shared Database:** All services use a single MongoDB database (`bookfair`)
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/verify` - Verify JWT token
-- `GET /api/auth/profile` - Get user profile (Protected)
-
-## Environment Variables
 
 ## Available Commands
 
+### Docker
 ```bash
-# Docker
-npm run docker:dev           # Start services
-npm run docker:down          # Stop services
-npm run docker:logs          # View all logs
-npm run docker:restart       # Restart services
-
-# Database
-npm run db:init              # Initialize database
-npm run db:status            # View database status
-
-## Project Structure
-
-```
-backend/
-├── services/
-│   ├── api-gateway/         # Request routing (Port 3000)
-│   ├── auth-service/        # Authentication (Port 3001)
-│   ├── stall-service/       # Stall management (Port 3002)
-│   ├── reservation-service/ # Reservations (Port 3003)
-│   └── notification-service/# Notifications (Port 3004)
-├── shared/                  # Shared utilities
-└── scripts/                 # Database scripts
+npm run docker:dev    # Start all services
+npm run docker:logs   # View logs
+npm run docker:down   # Stop services
 ```
 
-## Tech Stack
+### Database
+```bash
+npm run db:init     # Initialize database
+npm run db:seed     # Seed sample data
+npm run db:clear    # Clear all data
+npm run db:reset    # Clear and reseed
+npm run db:status   # Check status
+```
 
-- **Runtime:** Node.js 18+
-- **Framework:** Express.js
-- **Database:** MongoDB 7.0
-- **Authentication:** JWT
-- **Containerization:** Docker & Docker Compose
+## Quick API Test
+
+```bash
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"vendor1@example.com","password":"Vendor@123"}'
+
+# Get stalls (use accessToken from login response)
+curl http://localhost:3000/api/stalls?status=available \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+## Seed Data Details
+
+The `npm run db:seed` command creates:
+
+- **5 Users:** Admin, Employee, 2 Vendors, 1 Publisher
+- **3 Categories:** Books, Stationery, Arts & Crafts
+- **120 Stalls:** 
+  - 3 zones (A, B, C)
+  - 2 floors per zone
+  - Sizes: 100-200 sqft
+  - Prices: 1,000-2,000 LKR/day
+  - Various amenities (WiFi, Power, Display Shelf, etc.)
+
+## Troubleshooting
+
+**Services won't start:**
+```bash
+npm run docker:down
+npm run docker:dev
+```
+
+**Database connection issues:**
+```bash
+docker ps                 # Check if MongoDB is running
+npm run db:status         # Verify connection
+```
+
+**View service logs:**
+```bash
+npm run docker:logs
+```
+
+**Reset everything:**
+```bash
+npm run docker:down
+npm run docker:dev
+npm run db:init
+npm run db:seed
+```

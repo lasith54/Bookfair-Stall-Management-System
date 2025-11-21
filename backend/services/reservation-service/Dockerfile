@@ -9,6 +9,9 @@ RUN npm install
 
 COPY . .
 
+# Create shared directory for volume mount
+RUN mkdir -p /app/shared
+
 EXPOSE 3003
 
 CMD ["npm", "run", "dev"]

@@ -2,7 +2,8 @@ const Reservation = require('../models/Reservation');
 const { validationResult } = require('express-validator');
 const { generateReservationNumber } = require('../utils/generateReservationNumber');
 const { calculateTotalAmount, calculateRefund, calculatePaymentDeadline } = require('../utils/pricing');
-const axios = require('axios');
+const stallServiceClient = require('../services/stallServiceClient');
+const notificationServiceClient = require('../services/notificationServiceClient');
 
 // Create a new reservation
 exports.createReservation = async (req, res) => {
@@ -20,25 +21,14 @@ exports.createReservation = async (req, res) => {
     const { stallId, startDate, endDate, purpose, specialRequests } = req.body;
     const userId = req.user.userId;
 
-    // Fetch stall details from stall service
+    // Validate and fetch stall details from stall service
     let stallData;
     try {
-      const stallResponse = await axios.get(
-        `${process.env.STALL_SERVICE_URL}/api/stalls/${stallId}`
-      );
-      stallData = stallResponse.data.data.stall;
+      stallData = await stallServiceClient.validateStallForReservation(stallId);
     } catch (error) {
       return res.status(404).json({
         success: false,
-        message: 'Stall not found or unavailable'
-      });
-    }
-
-    // Check if stall is available for booking
-    if (stallData.status !== 'available') {
-      return res.status(400).json({
-        success: false,
-        message: 'Stall is not available for reservation'
+        message: error.message || 'Stall not found or unavailable'
       });
     }
 
@@ -54,7 +44,7 @@ exports.createReservation = async (req, res) => {
     const basePrice = stallData.pricing.basePrice;
     const totalAmount = calculateTotalAmount(basePrice, duration);
 
-    // Create reservation
+    // Create reservation with auto-confirmed status (simplified flow)
     const reservation = await Reservation.create({
       userId,
       stallId,
@@ -64,20 +54,26 @@ exports.createReservation = async (req, res) => {
       duration,
       basePrice,
       totalAmount,
-      remainingAmount: totalAmount,
       purpose,
       specialRequests,
-      status: 'pending',
-      paymentStatus: 'pending'
+      status: 'confirmed', // Auto-confirmed in simplified flow
+      submittedAt: new Date()
     });
 
     // Populate user and stall info
     await reservation.populate('userId', 'name email contactNumber');
     await reservation.populate('stallId', 'stallNumber location pricing');
 
+    // Send confirmation notification with QR code (non-blocking)
+    notificationServiceClient.sendReservationConfirmed(
+      reservation,
+      reservation.userId,
+      stallData
+    ).catch(err => console.error('Notification error:', err.message));
+
     res.status(201).json({
       success: true,
-      message: 'Reservation created successfully',
+      message: 'Reservation created and confirmed successfully',
       data: {
         reservation
       }
@@ -99,7 +95,6 @@ exports.getMyReservations = async (req, res) => {
       page = 1,
       limit = 10,
       status,
-      paymentStatus,
       sortBy = 'createdAt',
       sortOrder = 'desc'
     } = req.query;
@@ -109,7 +104,6 @@ exports.getMyReservations = async (req, res) => {
     // Build filter
     const filter = { userId };
     if (status) filter.status = status;
-    if (paymentStatus) filter.paymentStatus = paymentStatus;
 
     // Calculate pagination
     const skip = (page - 1) * limit;
@@ -167,21 +161,31 @@ exports.getReservationById = async (req, res) => {
       });
     }
 
-    // Build timeline
-    const timeline = [
-      { action: 'Created', date: reservation.submittedAt, status: 'completed' }
-    ];
-
-    if (reservation.approvedAt) {
-      timeline.push({ action: 'Approved', date: reservation.approvedAt, status: 'completed' });
-    }
+    // Build timeline for simplified flow
+    const timeline = [];
 
     if (reservation.status === 'confirmed') {
-      timeline.push({ action: 'Confirmed', date: reservation.updatedAt, status: 'completed' });
+      timeline.push({ 
+        action: 'Confirmed', 
+        date: reservation.submittedAt || reservation.createdAt, 
+        status: 'completed' 
+      });
     }
 
     if (reservation.cancelledAt) {
-      timeline.push({ action: 'Cancelled', date: reservation.cancelledAt, status: 'completed' });
+      timeline.push({ 
+        action: 'Cancelled', 
+        date: reservation.cancelledAt, 
+        status: 'completed' 
+      });
+    }
+
+    if (reservation.status === 'completed') {
+      timeline.push({ 
+        action: 'Completed', 
+        date: reservation.updatedAt, 
+        status: 'completed' 
+      });
     }
 
     res.status(200).json({
@@ -249,11 +253,29 @@ exports.cancelReservation = async (req, res) => {
     reservation.cancelledBy = userId;
     reservation.refundAmount = refundInfo.refundAmount;
 
-    if (reservation.paidAmount > 0) {
-      reservation.paymentStatus = 'refunded';
+    await reservation.save();
+
+    // Populate for response and notification
+    await reservation.populate('userId', 'name email contactNumber');
+    await reservation.populate('stallId', 'stallNumber location');
+
+    // Fetch stall details for notification
+    let stallData;
+    try {
+      stallData = await stallServiceClient.getStallById(reservation.stallId._id || reservation.stallId);
+    } catch (error) {
+      console.error('Failed to fetch stall for cancellation notification:', error.message);
+      stallData = reservation.stallId; // Use populated data as fallback
     }
 
-    await reservation.save();
+    // Send cancellation notification (non-blocking)
+    notificationServiceClient.sendReservationCancelled(
+      reservation,
+      reservation.userId,
+      stallData,
+      refundInfo.refundAmount,
+      refundInfo.refundPercentage
+    ).catch(err => console.error('Notification error:', err.message));
 
     res.status(200).json({
       success: true,

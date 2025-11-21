@@ -3,6 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./config/database');
+
+// Register models before routes
+require('./models/User');
+require('./models/Stall');
+
 const reservationRoutes = require('./routes/reservationRoutes');
 const adminReservationRoutes = require('./routes/adminReservationRoutes');
 

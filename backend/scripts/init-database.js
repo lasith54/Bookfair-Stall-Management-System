@@ -67,8 +67,8 @@ async function initDatabase() {
     
     await mongoose.connect(MONGO_URI);
     
-    console.log('✅ Connected to MongoDB');
-    console.log(`📊 Database: ${mongoose.connection.db.databaseName}`);
+    console.log('Connected to MongoDB');
+    console.log(`Database: ${mongoose.connection.db.databaseName}`);
     console.log('');
 
     const db = mongoose.connection.db;
@@ -77,17 +77,17 @@ async function initDatabase() {
     const existingCollections = await db.listCollections().toArray();
     const existingCollectionNames = existingCollections.map(c => c.name);
 
-    console.log('📋 Initializing Collections and Indexes...\n');
+    console.log('Initializing Collections and Indexes...\n');
 
     for (const [collectionName, config] of Object.entries(collections)) {
-      console.log(`📁 ${collectionName}`);
+      console.log(`${collectionName}`);
 
       // Create collection if it doesn't exist
       if (!existingCollectionNames.includes(collectionName)) {
         await db.createCollection(collectionName);
-        console.log(`   ✅ Collection created`);
+        console.log(`   Collection created`);
       } else {
-        console.log(`   ℹ️  Collection already exists`);
+        console.log(`   Collection already exists`);
       }
 
       // Create indexes
@@ -97,12 +97,12 @@ async function initDatabase() {
         try {
           await collection.createIndex(indexSpec.key, indexSpec.options);
           const indexName = Object.keys(indexSpec.key).join('_');
-          console.log(`   ✅ Index: ${indexName}`);
+          console.log(`   Index: ${indexName}`);
         } catch (error) {
           if (error.code === 85 || error.code === 86) {
             // Index already exists with different options, skip
             const indexName = Object.keys(indexSpec.key).join('_');
-            console.log(`   ⚠️  Index: ${indexName} (already exists)`);
+            console.log(`   Index: ${indexName} (already exists)`);
           } else {
             throw error;
           }
@@ -113,7 +113,7 @@ async function initDatabase() {
     }
 
     // Display summary
-    console.log('📊 Database Summary\n');
+    console.log('Database Summary\n');
     console.log('═══════════════════════════════════════════════════');
     
     for (const collectionName of Object.keys(collections)) {
@@ -126,9 +126,9 @@ async function initDatabase() {
     
     console.log('═══════════════════════════════════════════════════');
     console.log('');
-    console.log('🎉 Database initialization complete!');
+    console.log('Database initialization complete!');
     console.log('');
-    console.log('📝 Service Collection Ownership:');
+    console.log('Service Collection Ownership:');
     console.log('   Auth Service:         users, refreshtokens');
     console.log('   Stall Service:        stalls, stallcategories');
     console.log('   Reservation Service:  reservations');
@@ -137,7 +137,7 @@ async function initDatabase() {
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error initializing database:', error);
+    console.error('Error initializing database:', error);
     process.exit(1);
   }
 }

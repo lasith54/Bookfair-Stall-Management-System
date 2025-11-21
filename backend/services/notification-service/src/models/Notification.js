@@ -22,11 +22,17 @@ const notificationSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    recipientEmail: {
+      type: String,
+      required: true,
+    },
     reservation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Reservation',
-      required: true,
       index: true,
+    },
+    data: {
+      type: mongoose.Schema.Types.Mixed,
     },
     channel: {
       type: String,
@@ -35,11 +41,9 @@ const notificationSchema = new mongoose.Schema(
     },
     subject: {
       type: String,
-      required: true,
     },
     message: {
       type: String,
-      required: true,
     },
     emailData: {
       to: String,

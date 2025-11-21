@@ -165,7 +165,7 @@ const seedDatabase = async () => {
       console.log(`  ${category.name}: ${count}`);
     }
 
-    console.log('\n✅ Seed completed successfully!');
+    console.log('\nSeed completed successfully!');
     process.exit(0);
   } catch (error) {
     console.error('Seed error:', error);

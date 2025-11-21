@@ -25,11 +25,11 @@ const User = mongoose.model('User', userSchema);
 
 const seedUsers = async () => {
   try {
-    console.log('🌱 Seeding database...');
+    console.log('Seeding database...');
 
     // Clear existing users
     await User.deleteMany({});
-    console.log('✅ Cleared existing users');
+    console.log('Cleared existing users');
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -84,16 +84,16 @@ const seedUsers = async () => {
     ];
 
     await User.insertMany(users);
-    console.log('✅ Created sample users:');
+    console.log('Created sample users:');
     console.log('   - vendor1@test.com (password: password123)');
     console.log('   - publisher1@test.com (password: password123)');
     console.log('   - employee1@test.com (password: password123)');
     console.log('   - admin@bookfair.lk (password: password123)');
 
-    console.log('\n🎉 Database seeded successfully!');
+    console.log('\nDatabase seeded successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error('Error seeding database:', error);
     process.exit(1);
   }
 };

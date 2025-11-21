@@ -6,7 +6,7 @@ const MONGO_URI = process.env.MONGO_URI?.replace('mongodb://mongodb:', 'mongodb:
 
 async function showDatabaseStatus() {
   try {
-    console.log('🔌 Connecting to MongoDB...\n');
+    console.log('Connecting to MongoDB...\n');
     
     await mongoose.connect(MONGO_URI);
     
@@ -14,12 +14,12 @@ async function showDatabaseStatus() {
     const dbName = db.databaseName;
 
     console.log('═══════════════════════════════════════════════════');
-    console.log(`📊 DATABASE STATUS - ${dbName}`);
+    console.log(`DATABASE STATUS - ${dbName}`);
     console.log('═══════════════════════════════════════════════════\n');
 
     // Database stats
     const dbStats = await db.stats();
-    console.log('💾 Database Overview:');
+    console.log('Database Overview:');
     console.log(`   Size: ${(dbStats.dataSize / 1024 / 1024).toFixed(2)} MB`);
     console.log(`   Storage: ${(dbStats.storageSize / 1024 / 1024).toFixed(2)} MB`);
     console.log(`   Indexes: ${(dbStats.indexSize / 1024 / 1024).toFixed(2)} MB`);
@@ -31,7 +31,7 @@ async function showDatabaseStatus() {
     const collections = await db.listCollections().toArray();
     
     if (collections.length === 0) {
-      console.log('⚠️  No collections found. Run init-database.js first.\n');
+      console.log('No collections found. Run init-database.js first.\n');
       process.exit(0);
     }
 
@@ -77,7 +77,7 @@ async function showDatabaseStatus() {
     console.log('─────────────────────────┴────────────┴──────────┴──────────┴─────────────────────\n');
 
     // Show indexes for each collection
-    console.log('🔍 Indexes:\n');
+    console.log('Indexes:\n');
     
     for (const collectionInfo of collections) {
       const collectionName = collectionInfo.name;
