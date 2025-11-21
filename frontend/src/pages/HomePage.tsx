@@ -1,118 +1,70 @@
 import { Button } from "@/components/ui/button";
 import { Users, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import cibfLogo from "@/assets/CIBF-Logo-Web.png";
-import cibfBackground from "@/assets/Colombo-International-Book-Fair-2023-.jpg";
+import Header from "@/components/Header";
+import { useNavigate } from "react-router-dom";
+import HeroCarousel from "@/components/HeroCarousel";
 
 export default function HomePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
-      {/* Header */}
-      <header className="bg-white shadow-sm w-full">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-3">
-              <img 
-                src={cibfLogo} 
-                alt="CIBF Logo" 
-                className="h-16 w-auto"
-              />
-              <div className="flex flex-col">
-                <h1 className="text-xl text-blue-800 leading-tight">
-                  Colombo International
-                </h1>
-                <h2 className="text-3xl font-bold text-blue-800 leading-tight">
-                  Book Fair
-                </h2>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                // Show when user is logged in
-                <>
-                  <span className="text-gray-700">Welcome, {user.name || user.email}</span>
-                  <Button
-                    onClick={logout}
-                    variant="outline"
-                    size="lg"
-                    className="bg-red-600 hover:bg-red-700 text-white border-red-600"
-                  >
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                // Show when user is not logged in
-                <>
-                  <Link to="/login">
-                    <Button variant="outline" size="lg">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button size="lg" className="bg-blue-800 hover:bg-blue-900">
-                      Register
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header title="Book Fair" />
 
       {/* Hero Section */}
       <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
-        <div 
-          className="text-center w-full bg-cover bg-center bg-no-repeat relative py-20 px-8 rounded-lg"
-          style={{ backgroundImage: `url(${cibfBackground})` }}
-        >
-          {/* Overlay for better text readability */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg"></div>
+        <div className="text-center w-full relative">
+          <HeroCarousel />
           
-          <div className="relative z-10">
-            <h2 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">
-              BOOK FAIR 2025
-            </h2>
-            <div className="text-2xl text-white mb-6 drop-shadow-md">
-              <p className="font-semibold">27th September to 06th October 2025</p>
-              <p>9.00 AM to 9.00 PM</p>
-            </div>
-            <div className="text-xl text-white mb-8 drop-shadow-md">
-              <p className="font-medium">Bandaranaike Memorial International Conference Hall – BMICH</p>
-              <p>Bauddhaloka Mawatha, Colombo 07, Sri Lanka</p>
-            </div>
-            
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              {user ? (
-                // Show stall management buttons when logged in
-                <>
-                  <Button size="lg" className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900">
-                    Manage Stall
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    View Analytics
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Hall Map
-                  </Button>
-                </>
-              ) : (
-                // Show general buttons when not logged in
-                <>
-                  <Button size="lg" className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900">
-                    Apply Now
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Contact Now
-                  </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800">
-                    Hall Map
-                  </Button>
-                </>
-              )}
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <div className="text-center px-8">
+              <h2 className="text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                BOOK FAIR 2025
+              </h2>
+              <div className="text-2xl text-white mb-6 drop-shadow-md">
+                <p className="font-semibold">27th September to 06th October 2025</p>
+                <p>9.00 AM to 9.00 PM</p>
+              </div>
+              <div className="text-xl text-white mb-8 drop-shadow-md">
+                <p className="font-medium">Bandaranaike Memorial International Conference Hall – BMICH</p>
+                <p>Bauddhaloka Mawatha, Colombo 07, Sri Lanka</p>
+              </div>
+              
+              <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                {user ? (
+                  // Show stall management buttons when logged in
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      Reserve Stall
+                    </Button>
+                  </>
+                ) : (
+                  // Show general buttons when not logged in
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="text-lg px-8 py-4 bg-blue-800 hover:bg-blue-900"
+                      onClick={() => navigate('/login')}
+                    >
+                      Apply Now
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="text-lg px-8 py-4 border-white text-blue-800 hover:bg-white hover:text-blue-800"
+                      onClick={() => navigate('/hall-map')}
+                    >
+                      Hall Map
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
