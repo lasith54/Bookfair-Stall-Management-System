@@ -1,6 +1,8 @@
 const Reservation = require('../models/Reservation');
 const { validationResult } = require('express-validator');
 const { calculateTotalAmount, calculatePaymentDeadline } = require('../utils/pricing');
+const stallServiceClient = require('../services/stallServiceClient');
+const notificationServiceClient = require('../services/notificationServiceClient');
 
 // Get all reservations (admin)
 exports.getAllReservations = async (req, res) => {
@@ -9,7 +11,6 @@ exports.getAllReservations = async (req, res) => {
       page = 1,
       limit = 10,
       status,
-      paymentStatus,
       userId,
       stallId,
       startDate,
@@ -23,7 +24,6 @@ exports.getAllReservations = async (req, res) => {
     const filter = {};
     
     if (status) filter.status = status;
-    if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (userId) filter.userId = userId;
     if (stallId) filter.stallId = stallId;
     
@@ -60,25 +60,18 @@ exports.getAllReservations = async (req, res) => {
         $group: {
           _id: null,
           total: { $sum: 1 },
-          pending: {
-            $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] }
-          },
-          approved: {
-            $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] }
-          },
-          rejected: {
-            $sum: { $cond: [{ $eq: ['$status', 'rejected'] }, 1, 0] }
-          },
           confirmed: {
             $sum: { $cond: [{ $eq: ['$status', 'confirmed'] }, 1, 0] }
           },
           cancelled: {
             $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] }
           },
-          totalRevenue: {
-            $sum: { $cond: [{ $in: ['$status', ['approved', 'confirmed', 'completed']] }, '$totalAmount', 0] }
+          completed: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
           },
-          totalPaid: { $sum: '$paidAmount' }
+          totalRevenue: {
+            $sum: { $cond: [{ $in: ['$status', ['confirmed', 'completed']] }, '$totalAmount', 0] }
+          }
         }
       }
     ]);
@@ -89,13 +82,10 @@ exports.getAllReservations = async (req, res) => {
         reservations,
         statistics: statistics[0] || {
           total: 0,
-          pending: 0,
-          approved: 0,
-          rejected: 0,
           confirmed: 0,
           cancelled: 0,
-          totalRevenue: 0,
-          totalPaid: 0
+          completed: 0,
+          totalRevenue: 0
         },
         pagination: {
           total,
@@ -280,8 +270,6 @@ exports.updateReservation = async (req, res) => {
       'status',
       'additionalCharges',
       'notes',
-      'paymentStatus',
-      'paidAmount',
       'specialRequests'
     ];
 
@@ -338,27 +326,19 @@ exports.confirmReservation = async (req, res) => {
       });
     }
 
-    if (reservation.status !== 'approved') {
+    // In simplified flow, reservations are already confirmed on creation
+    // This endpoint can be used to re-confirm or update status to completed
+    if (!['confirmed', 'completed'].includes(reservation.status)) {
       return res.status(400).json({
         success: false,
-        message: 'Only approved reservations can be confirmed'
+        message: 'Invalid reservation status for confirmation'
       });
     }
 
-    // Check if payment is complete or partial payment made
-    if (reservation.paidAmount === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot confirm reservation without any payment'
-      });
-    }
-
-    reservation.status = 'confirmed';
     if (notes) {
       reservation.notes = notes;
+      await reservation.save();
     }
-
-    await reservation.save();
 
     await reservation.populate('userId', 'name email');
     await reservation.populate('stallId', 'stallNumber location');
@@ -435,7 +415,6 @@ exports.generateReport = async (req, res) => {
           _id: null,
           totalReservations: { $sum: 1 },
           totalRevenue: { $sum: '$totalAmount' },
-          totalPaid: { $sum: '$paidAmount' },
           averageBookingValue: { $avg: '$totalAmount' }
         }
       }
@@ -450,21 +429,7 @@ exports.generateReport = async (req, res) => {
           $group: {
             _id: '$status',
             count: { $sum: 1 },
-            totalAmount: { $sum: '$totalAmount' },
-            paidAmount: { $sum: '$paidAmount' }
-          }
-        },
-        { $sort: { count: -1 } }
-      ]);
-    } else if (groupBy === 'paymentStatus') {
-      breakdown = await Reservation.aggregate([
-        { $match: filter },
-        {
-          $group: {
-            _id: '$paymentStatus',
-            count: { $sum: 1 },
-            totalAmount: { $sum: '$totalAmount' },
-            paidAmount: { $sum: '$paidAmount' }
+            totalAmount: { $sum: '$totalAmount' }
           }
         },
         { $sort: { count: -1 } }
@@ -477,7 +442,6 @@ exports.generateReport = async (req, res) => {
         summary: summary[0] || {
           totalReservations: 0,
           totalRevenue: 0,
-          totalPaid: 0,
           averageBookingValue: 0
         },
         breakdown,

@@ -87,6 +87,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/bookfair
       - JWT_SECRET=bookfair-secret-key-2025-change-in-production
       - STALL_SERVICE_URL=http://stall-service:3002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
       - NODE_ENV=development
     depends_on:
       mongodb:
@@ -95,6 +96,7 @@ services:
         condition: service_started
     volumes:
       - ./services/reservation-service/src:/app/src
+      - ./shared:/app/shared
       - /app/node_modules
     networks:
       - bookfair-network
@@ -118,10 +120,14 @@ services:
       - NODE_ENV=development
       - SMTP_HOST=smtp.gmail.com
       - SMTP_PORT=587
-      - SMTP_USER=your-email@gmail.com
-      - SMTP_PASS=your-app-password
-      - SMTP_FROM=noreply@bookfair.com
-      - QR_SECRET_KEY=qr-encryption-secret-key-2025-change-in-production
+      - SMTP_SECURE=false
+      - SMTP_USER=nithilsheshan@gmail.com
+      - SMTP_PASS=ynwfyuktfjjxvjzb
+      - SMTP_FROM=Bookfair Management System <bookifair-reservation-system@gmail.com>
+      - SMTP_FROM_NAME=Bookfair Management System
+      - SMTP_FROM_EMAIL=bookifair-reservation-system@gmail.com
+      - QR_CODE_SECRET=your-secret-key-for-qr-encryption-min-32-chars
+      - QR_CODE_EXPIRY_DAYS=30
       - QR_CODE_SIZE=300
     depends_on:
       mongodb:

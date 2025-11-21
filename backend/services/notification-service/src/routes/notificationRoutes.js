@@ -9,13 +9,17 @@ const {
   deleteNotification,
   getUnreadCount,
   resendNotification,
+  sendNotification,
 } = require('../controllers/notificationController');
 const {
   validateNotificationQuery,
   validateMongoId,
 } = require('../middleware/validation');
 
-// All routes require authentication
+// Inter-service communication endpoint (no auth required)
+router.post('/send', sendNotification);
+
+// All other routes require authentication
 router.use(authenticateToken);
 
 // Get all notifications for logged-in user

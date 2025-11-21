@@ -184,6 +184,57 @@ const resendNotification = async (req, res) => {
   }
 };
 
+/**
+ * Send notification (Inter-service communication endpoint)
+ * No authentication required - for internal service calls only
+ */
+const sendNotification = async (req, res) => {
+  try {
+    const { type, recipient, recipientEmail, reservation, data } = req.body;
+
+    // Validate required fields
+    if (!type || !recipient || !recipientEmail) {
+      return errorResponse(res, 'Missing required fields: type, recipient, recipientEmail', 400);
+    }
+
+    // Check user notification preferences
+    const preferences = await NotificationPreference.findOne({ userId: recipient });
+    
+    // If preferences exist and email is disabled, skip sending
+    if (preferences && !preferences.channels.email) {
+      console.log(`Email notifications disabled for user ${recipient}`);
+      return successResponse(res, { sent: false }, 'Email notifications disabled for user');
+    }
+
+    // Create notification document
+    const notification = await Notification.create({
+      type,
+      recipient,
+      recipientEmail,
+      reservation,
+      data,
+      status: 'PENDING'
+    });
+
+    // Send email asynchronously (don't wait for response)
+    sendNotificationEmail(notification)
+      .then(() => {
+        console.log(`Notification sent successfully: ${type} to ${recipientEmail}`);
+      })
+      .catch((error) => {
+        console.error(`Failed to send notification: ${error.message}`);
+      });
+
+    return successResponse(res, { 
+      notificationId: notification._id,
+      sent: true 
+    }, 'Notification queued successfully', 201);
+  } catch (error) {
+    console.error('Send notification error:', error);
+    return errorResponse(res, error.message, 500);
+  }
+};
+
 module.exports = {
   getMyNotifications,
   getNotificationById,
@@ -192,4 +243,5 @@ module.exports = {
   deleteNotification,
   getUnreadCount,
   resendNotification,
+  sendNotification,
 };

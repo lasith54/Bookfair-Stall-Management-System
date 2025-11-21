@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{subject}}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #28a745;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #28a745;
+      margin: 0;
+      font-size: 28px;
+    }
+    .content {
+      margin-bottom: 30px;
+    }
+    .info-box {
+      background-color: #f9f9f9;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .info-value {
+      color: #333;
+    }
+    .qr-code-section {
+      text-align: center;
+      background-color: #f0f8ff;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 2px dashed #28a745;
+    }
+    .qr-code-section img {
+      max-width: 250px;
+      margin: 10px 0;
+    }
+    .footer {
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #777;
+      font-size: 12px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .alert-success {
+      background-color: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .alert-success h3 {
+      margin-top: 0;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Bookfair Stall Management</h1>
+    </div>
+    
+    <div class="content">
+      <h2>Reservation Confirmed!</h2>
+      
+      <p>Dear {{userName}},</p>
+      
+      <p>Great news! Your stall reservation has been <strong>confirmed</strong> and is ready for use.</p>
+      
+      <div class="alert-success">
+        <h3>✓ Your Reservation is Confirmed</h3>
+        <p>You can now proceed with your preparations. Your QR code for entry is included below.</p>
+      </div>
+      
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Reservation Number:</span>
+          <span class="info-value"><strong>{{reservationNumber}}</strong></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Stall Number:</span>
+          <span class="info-value">{{stallNumber}}</span>
+        </div>
+        {{#if stallLocation}}
+        <div class="info-row">
+          <span class="info-label">Location:</span>
+          <span class="info-value">{{stallLocation}}</span>
+        </div>
+        {{/if}}
+        <div class="info-row">
+          <span class="info-label">Start Date:</span>
+          <span class="info-value">{{formatDate startDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">End Date:</span>
+          <span class="info-value">{{formatDate endDate}}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration:</span>
+          <span class="info-value">{{duration}} days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Amount:</span>
+          <span class="info-value"><strong>Rs. {{formatCurrency totalAmount}}</strong></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status:</span>
+          <span class="info-value"><span class="status-badge">CONFIRMED</span></span>
+        </div>
+      </div>
+
+      {{#if purpose}}
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Purpose:</span>
+        </div>
+        <p style="margin: 10px 0 0 0; color: #666;">{{purpose}}</p>
+      </div>
+      {{/if}}
+
+      {{#if specialRequests}}
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Special Requests:</span>
+        </div>
+        <p style="margin: 10px 0 0 0; color: #666;">{{specialRequests}}</p>
+      </div>
+      {{/if}}
+
+      {{#if amenities}}
+      <div class="info-box">
+        <div class="info-row">
+          <span class="info-label">Stall Amenities:</span>
+        </div>
+        <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+          {{#each amenities}}
+          <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+      {{/if}}
+
+      <div class="qr-code-section">
+        <h3 style="color: #28a745; margin-top: 0;">📱 Your Entry QR Code</h3>
+        <p>Please present this QR code at the entrance on the event day.</p>
+        {{#if qrCodeImage}}
+        <img src="cid:qrcode" alt="QR Code" />
+        {{else}}
+        <p style="color: #666; font-style: italic;">QR code will be attached to this email.</p>
+        {{/if}}
+        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+          <strong>Reservation ID:</strong> {{reservationNumber}}
+        </p>
+      </div>
+
+      <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h4 style="margin-top: 0; color: #856404;">📝 Important Notes:</h4>
+        <ul style="margin: 0; padding-left: 20px; color: #856404;">
+          <li>Save this QR code for entry verification</li>
+          <li>Arrive at least 30 minutes before setup time</li>
+          <li>Payment can be processed through our online portal</li>
+          <li>Contact support if you need to modify your reservation</li>
+        </ul>
+      </div>
+
+      <p style="margin-top: 30px;">
+        If you have any questions or need assistance, please don't hesitate to contact our support team.
+      </p>
+
+      <p>Best regards,<br>
+      <strong>Bookfair Stall Management Team</strong></p>
+    </div>
+
+    <div class="footer">
+      <p>This is an automated message. Please do not reply to this email.</p>
+      <p>&copy; 2025 Bookfair Stall Management System. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

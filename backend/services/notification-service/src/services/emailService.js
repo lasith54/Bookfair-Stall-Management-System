@@ -57,17 +57,29 @@ const sendNotificationEmail = async (notification) => {
       };
     }
 
-    // Populate notification data
-    await notification.populate('recipient reservation');
+    // Populate notification data if references exist
+    if (notification.recipient && typeof notification.recipient !== 'object') {
+      await notification.populate('recipient');
+    }
+    if (notification.reservation && typeof notification.reservation !== 'object') {
+      await notification.populate('reservation');
+    }
 
-    // Prepare email data
+    // Generate subject if not provided
+    const subject = notification.subject || getSubjectForType(notification.type, notification.data);
+
+    // Prepare email data - merge notification.data with populated fields
     const emailData = {
-      user: {
-        name: notification.recipient.name,
-        email: notification.recipient.email,
+      ...notification.data, // Custom data from inter-service call
+      user: notification.recipient ? {
+        name: notification.recipient.name || notification.data?.userName,
+        email: notification.recipient.email || notification.recipientEmail,
+      } : {
+        name: notification.data?.userName,
+        email: notification.recipientEmail,
       },
       reservation: notification.reservation,
-      subject: notification.subject,
+      subject: subject,
       message: notification.message,
       metadata: notification.metadata || {},
     };
@@ -79,9 +91,13 @@ const sendNotificationEmail = async (notification) => {
     const attachments = notification.emailData?.attachments || [];
 
     // Send email
+    const recipientEmail = notification.recipientEmail || 
+                          notification.recipient?.email || 
+                          notification.emailData?.to;
+    
     const result = await sendEmail(
-      notification.emailData?.to || notification.recipient.email,
-      notification.subject,
+      recipientEmail,
+      subject,
       html,
       attachments
     );
@@ -100,6 +116,24 @@ const sendNotificationEmail = async (notification) => {
 
     throw new Error(`Notification email failed: ${error.message}`);
   }
+};
+
+/**
+ * Get subject line based on notification type
+ */
+const getSubjectForType = (type, data) => {
+  const subjects = {
+    RESERVATION_CREATED: `Reservation Created - ${data?.reservationNumber || 'New Booking'}`,
+    RESERVATION_APPROVED: `Reservation Approved - ${data?.reservationNumber || ''}`,
+    RESERVATION_REJECTED: `Reservation Rejected - ${data?.reservationNumber || ''}`,
+    RESERVATION_CONFIRMED: `Booking Confirmed - ${data?.stallNumber || data?.reservationNumber || 'Your Stall'}`,
+    RESERVATION_CANCELLED: `Reservation Cancelled - ${data?.reservationNumber || ''}`,
+    PAYMENT_REMINDER: `Payment Reminder - ${data?.reservationNumber || ''}`,
+    RESERVATION_REMINDER: `Upcoming Event Reminder - ${data?.reservationNumber || ''}`,
+    QR_CODE_SENT: `Your QR Code - ${data?.reservationNumber || ''}`,
+  };
+  
+  return subjects[type] || 'Bookfair Notification';
 };
 
 /**
