@@ -56,21 +56,21 @@ async function seedDatabase() {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Clear existing users
     await User.deleteMany({});
-    console.log('🗑️  Cleared existing users');
+    console.log('Cleared existing users');
 
     // Create test users
     for (const userData of testUsers) {
       const user = new User(userData);
       await user.save();
-      console.log(`✅ Created ${user.role}: ${user.email}`);
+      console.log(`Created ${user.role}: ${user.email}`);
     }
 
-    console.log('\n🎉 Database seeded successfully!');
-    console.log('\n📝 Test Credentials:');
+    console.log('\nDatabase seeded successfully!');
+    console.log('\nTest Credentials:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     testUsers.forEach(user => {
       console.log(`${user.role.toUpperCase()}: ${user.email} / ${user.password}`);
@@ -78,7 +78,7 @@ async function seedDatabase() {
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error('Error seeding database:', error);
     process.exit(1);
   }
 }

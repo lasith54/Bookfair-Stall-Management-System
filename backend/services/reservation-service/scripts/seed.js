@@ -122,7 +122,7 @@ const seedReservations = async () => {
     // Create reservations
     const createdReservations = await Reservation.insertMany(sampleReservations);
     
-    console.log(`\n✅ Successfully seeded ${createdReservations.length} reservations`);
+    console.log(`\nSuccessfully seeded ${createdReservations.length} reservations`);
     console.log('\nSample Reservations:');
     createdReservations.forEach(reservation => {
       console.log(`- ${reservation.reservationNumber} (${reservation.status})`);

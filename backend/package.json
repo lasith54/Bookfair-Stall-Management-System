@@ -13,8 +13,10 @@
     "docker:logs:auth": "docker-compose logs -f auth-service",
     "docker:logs:gateway": "docker-compose logs -f api-gateway",
     "docker:restart": "docker-compose restart",
-    "docker:seed": "docker-compose exec auth-service node /app/scripts/seed.js",
     "db:init": "node scripts/init-database.js",
+    "db:seed": "node scripts/seed-all.js",
+    "db:clear": "node scripts/clear-database.js",
+    "db:reset": "npm run db:clear && npm run db:seed",
     "db:status": "node scripts/db-status.js",
     "dev": "concurrently \"npm run dev:auth\" \"npm run dev:gateway\"",
     "dev:auth": "cd services/auth-service && npm run dev",
@@ -36,6 +38,7 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",
     "mongoose": "^8.19.3"
   }
