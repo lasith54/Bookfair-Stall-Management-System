@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       const error = err as ApiError;
       setError(
@@ -154,7 +154,7 @@ export default function LoginPage() {
                         required
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
                         placeholder="Enter your email address"
                       />
                     </div>
@@ -174,7 +174,7 @@ export default function LoginPage() {
                         required
                         value={formData.password}
                         onChange={handleChange}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-white"
                         placeholder="Enter your password"
                       />
                     </div>
