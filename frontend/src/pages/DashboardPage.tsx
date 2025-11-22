@@ -3,13 +3,16 @@ import Header from "@/components/Header";
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full overflow-x-hidden">
       <Header title="Book Fair" />
 
+      {/* Main Content */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
         {/* Interactive Venue Map */}
-        <div className="mt-12 w-full">
+        <div className="w-full max-w-full">
           <InteractiveVenueMap />
         </div>
+      </main>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white mt-20 w-full">
