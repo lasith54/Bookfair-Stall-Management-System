@@ -2,12 +2,16 @@ const emailConfig = require('../config/email');
 const { getEmailTemplate } = require('./templateEngine');
 const Notification = require('../models/Notification');
 const NotificationPreference = require('../models/NotificationPreference');
+const { generateQRCode } = require('./qrcodeService');
 
 /**
  * Send email
  */
 const sendEmail = async (to, subject, html, attachments = []) => {
   try {
+    console.log(`[sendEmail] Preparing to send email to ${to}`);
+    console.log(`[sendEmail] Attachments received: ${attachments.length}`);
+    
     const mailOptions = {
       from: emailConfig.defaults.from,
       to,
@@ -16,7 +20,11 @@ const sendEmail = async (to, subject, html, attachments = []) => {
       attachments,
     };
 
+    console.log(`[sendEmail] Mail options prepared with ${mailOptions.attachments?.length || 0} attachments`);
+
     const info = await emailConfig.transporter.sendMail(mailOptions);
+
+    console.log(`[sendEmail] Email sent successfully, messageId: ${info.messageId}`);
 
     return {
       success: true,
@@ -24,6 +32,7 @@ const sendEmail = async (to, subject, html, attachments = []) => {
       response: info.response,
     };
   } catch (error) {
+    console.error(`[sendEmail] Error sending email:`, error.message);
     throw new Error(`Email sending failed: ${error.message}`);
   }
 };
@@ -84,16 +93,106 @@ const sendNotificationEmail = async (notification) => {
       metadata: notification.metadata || {},
     };
 
-    // Get email HTML from template
+    // Prepare attachments - use a new array, not from notification object
+    // (to avoid Mongoose serialization issues with Buffers)
+    let attachments = [];
+
+    // Generate and attach QR code for reservation confirmation emails
+    if (notification.type === 'RESERVATION_CONFIRMED' && notification.data?.reservationId) {
+      try {
+        // Prepare reservation object for QR code generation
+        const reservationForQR = {
+          _id: notification.data.reservationId,
+          reservationNumber: notification.data.reservationNumber,
+          startDate: notification.data.startDate,
+          endDate: notification.data.endDate,
+          totalAmount: notification.data.totalAmount,
+          status: 'confirmed',
+          stall: {
+            _id: notification.data.stallId || 'unknown',
+            name: notification.data.stallNumber || 'Unknown Stall'
+          }
+        };
+
+        // Prepare user object for QR code generation
+        const userForQR = {
+          _id: notification.recipient?._id || notification.recipient,
+          email: notification.recipientEmail || notification.recipient?.email,
+          name: notification.data?.userName
+        };
+
+        // Generate QR code
+        const qrCodeRecord = await generateQRCode(reservationForQR, userForQR);
+
+        console.log(`QR code record generated, image length: ${qrCodeRecord.qrCodeImage?.length || 0}`);
+
+        // The qrCodeImage from DB contains the full data URL: "data:image/png;base64,..."
+        // We need just the base64 part for the attachment
+        let qrImageBase64 = qrCodeRecord.qrCodeImage;
+        if (qrImageBase64.startsWith('data:')) {
+          qrImageBase64 = qrImageBase64.split(',')[1];
+        }
+        
+        console.log(`Base64 data extracted, length: ${qrImageBase64.length}`);
+        console.log(`First 50 chars of base64: ${qrImageBase64.substring(0, 50)}`);
+
+        // Convert base64 to Buffer
+        const qrImageBuffer = Buffer.from(qrImageBase64, 'base64');
+        console.log(`Buffer created, size: ${qrImageBuffer.length} bytes`);
+        console.log(`Buffer type: ${typeof qrImageBuffer}, isBuffer: ${Buffer.isBuffer(qrImageBuffer)}`);
+
+        // Attach QR code as inline image with CID (for display in email body)
+        const inlineAttachment = {
+          filename: 'qrcode.png',
+          content: qrImageBuffer,
+          cid: 'qrcode', // Content-ID that matches the template
+          contentDisposition: 'inline',
+          contentType: 'image/png'
+        };
+        attachments.push(inlineAttachment);
+        console.log(`Inline attachment added: ${inlineAttachment.filename}, buffer length: ${inlineAttachment.content.length}`);
+
+        // Also attach as regular downloadable attachment
+        const downloadAttachment = {
+          filename: `QRCode-${notification.data.reservationNumber}.png`,
+          content: qrImageBuffer,
+          contentType: 'image/png'
+        };
+        attachments.push(downloadAttachment);
+        console.log(`Download attachment added: ${downloadAttachment.filename}, buffer length: ${downloadAttachment.content.length}`);
+
+        // Add flag to email data so template knows QR code is available
+        emailData.qrCodeImage = true;
+
+        console.log(`QR code attached to email (${qrImageBuffer.length} bytes) for reservation ${notification.data.reservationNumber}`);
+        console.log(`Attachments array now has ${attachments.length} items`);
+      } catch (qrError) {
+        console.error('Failed to generate QR code for email:', qrError.message);
+        console.error('QR code error stack:', qrError.stack);
+        // Continue sending email even if QR code generation fails
+      }
+    }
+
+    // Get email HTML from template (after QR code generation to include qrCodeImage flag)
     const html = await getEmailTemplate(notification.type, emailData);
 
-    // Prepare attachments
-    const attachments = notification.emailData?.attachments || [];
+    console.log(`After getEmailTemplate, attachments array has ${attachments.length} items`);
+    if (attachments.length > 0) {
+      console.log(`First attachment content is Buffer: ${Buffer.isBuffer(attachments[0].content)}, length: ${attachments[0].content?.length || 'undefined'}`);
+    }
 
     // Send email
     const recipientEmail = notification.recipientEmail || 
                           notification.recipient?.email || 
                           notification.emailData?.to;
+    
+    console.log(`Sending email with ${attachments.length} attachments`);
+    if (attachments.length > 0) {
+      attachments.forEach((att, idx) => {
+        const contentLength = Buffer.isBuffer(att.content) ? att.content.length : (att.content?.length || 0);
+        console.log(`Attachment ${idx}: ${att.filename}, content size: ${contentLength} bytes, cid: ${att.cid || 'none'}, isBuffer: ${Buffer.isBuffer(att.content)}`);
+      });
+    }
     
     const result = await sendEmail(
       recipientEmail,

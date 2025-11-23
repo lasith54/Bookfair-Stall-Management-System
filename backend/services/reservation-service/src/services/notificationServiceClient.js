@@ -27,6 +27,7 @@ class NotificationServiceClient {
           userName: user.name,
           reservationNumber: reservation.reservationNumber,
           stallNumber: stall.stallNumber,
+          stallId: reservation.stallId || stall._id, // Add stallId for QR code generation
           stallLocation: stall.location ? 
             `${stall.location.zone || ''} ${stall.location.floor || ''}`.trim() : 
             'N/A',
