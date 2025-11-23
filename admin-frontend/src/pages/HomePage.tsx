@@ -1,9 +1,15 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Users, FileText, Settings, BarChart3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function HomePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,7 +92,7 @@ export default function HomePage() {
               Please sign in with your admin credentials to continue.
             </p>
             <div className="space-x-4">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-blue-700" onClick={handleSignIn}>
                 Sign In
               </Button>
             </div>

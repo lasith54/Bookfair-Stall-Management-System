@@ -60,11 +60,6 @@ export default function Header() {
                     Login
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button size="sm">
-                    Register
-                  </Button>
-                </Link>
               </div>
             )}
           </div>

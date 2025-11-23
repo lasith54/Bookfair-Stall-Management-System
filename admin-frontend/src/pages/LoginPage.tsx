@@ -118,15 +118,6 @@ export default function LoginPage() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Need an admin account?{' '}
-            <Link to="/register" className="text-blue-600 hover:text-blue-800">
-              Register here
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );

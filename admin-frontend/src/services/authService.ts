@@ -16,14 +16,6 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  name: string;
-  contactNumber: string;
-  role?: 'admin' | 'employee';
-}
-
 export interface AuthResponse {
   success: boolean;
   message: string;
@@ -67,20 +59,6 @@ class AuthService {
     }
     
     throw new Error(response.data.message || 'Login failed');
-  }
-
-  async register(userData: RegisterRequest): Promise<AuthResponse> {
-    // Force admin role for admin frontend registration
-    const adminUserData = { ...userData, role: 'admin' as const };
-    const response = await this.api.post('/auth/register', adminUserData);
-    
-    if (response.data.success) {
-      const { user, accessToken, refreshToken } = response.data.data;
-      this.setAuthData(accessToken, refreshToken, user);
-      return response.data;
-    }
-    
-    throw new Error(response.data.message || 'Registration failed');
   }
 
   async getCurrentUser(): Promise<User> {
