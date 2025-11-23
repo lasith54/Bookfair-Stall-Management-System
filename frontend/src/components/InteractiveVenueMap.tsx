@@ -45,7 +45,7 @@ export default function InteractiveVenueMap() {
           const myStallIds = new Set(
             reservationsResponse.success
               ? reservationsResponse.data.reservations
-                  .filter((r: any) => r.status === 'confirmed' || r.status === 'pending')
+                  .filter((r: any) => r.status === 'completed' || r.status === 'pending')
                   .map((r: any) => {
                     // stallId can be a string or an object with _id
                     return typeof r.stallId === 'string' ? r.stallId : r.stallId._id;

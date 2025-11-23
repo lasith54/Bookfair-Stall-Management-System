@@ -44,7 +44,7 @@ exports.createReservation = async (req, res) => {
     const basePrice = stallData.pricing.basePrice;
     const totalAmount = calculateTotalAmount(basePrice, duration);
 
-    // Create reservation with auto-confirmed status (simplified flow)
+    // Create reservation with auto-approved and paid status
     const reservation = await Reservation.create({
       userId,
       stallId,
@@ -54,11 +54,23 @@ exports.createReservation = async (req, res) => {
       duration,
       basePrice,
       totalAmount,
+      paidAmount: totalAmount,
+      remainingAmount: 0,
       purpose,
       specialRequests,
-      status: 'confirmed', // Auto-confirmed in simplified flow
+      status: 'completed', 
+      paymentStatus: 'paid',
+      approvedAt: new Date(),
       submittedAt: new Date()
     });
+
+    // Update stall status to 'reserved'
+    try {
+      await stallServiceClient.updateStallStatus(stallId, 'reserved');
+    } catch (error) {
+      console.error('Error updating stall status:', error.message);
+      // Continue even if stall status update fails
+    }
 
     // Populate user and stall info
     await reservation.populate('userId', 'name email contactNumber');
@@ -73,7 +85,7 @@ exports.createReservation = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Reservation created and confirmed successfully',
+      message: 'Reservation created, confirmed, and payment completed successfully',
       data: {
         reservation
       }
@@ -254,6 +266,14 @@ exports.cancelReservation = async (req, res) => {
     reservation.refundAmount = refundInfo.refundAmount;
 
     await reservation.save();
+
+    // Update stall status back to 'available'
+    try {
+      await stallServiceClient.updateStallStatus(reservation.stallId, 'available');
+    } catch (error) {
+      console.error('Error updating stall status on cancellation:', error.message);
+      // Continue even if stall status update fails
+    }
 
     // Populate for response and notification
     await reservation.populate('userId', 'name email contactNumber');

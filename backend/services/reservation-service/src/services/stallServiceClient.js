@@ -94,6 +94,22 @@ class StallServiceClient {
       throw error;
     }
   }
+
+  /**
+   * Update stall status
+   * @param {string} stallId - Stall ID
+   * @param {string} status - New status (available, reserved, maintenance, inactive)
+   * @returns {Promise<object>} Updated stall details
+   */
+  async updateStallStatus(stallId, status) {
+    try {
+      const response = await this.client.patch(`/api/internal/stalls/${stallId}/status`, { status });
+      return response.data.stall;
+    } catch (error) {
+      console.error(`Error updating stall status:`, error.message);
+      throw new Error('Unable to update stall status');
+    }
+  }
 }
 
 // Export singleton instance

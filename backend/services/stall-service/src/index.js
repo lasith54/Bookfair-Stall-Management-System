@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const connectDB = require('./config/database');
 const stallRoutes = require('./routes/stallRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const internalRoutes = require('./routes/internalRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/stalls', stallRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/internal', internalRoutes); // Internal service-to-service routes
 
 // Health check
 app.get('/health', (req, res) => {
