@@ -1,0 +1,34 @@
+{
+  "components": [
+    {
+      "name": "Header",
+      "description": "Displays the navigation links at the top of the application.",
+      "path": "src/components/Header.tsx"
+    },
+    {
+      "name": "ProtectedRoute",
+      "description": "Protects certain routes from being accessed by unauthenticated users.",
+      "path": "src/components/ProtectedRoute.tsx"
+    },
+    {
+      "name": "Button",
+      "description": "Reusable button component for consistent styling.",
+      "path": "src/components/ui/button.tsx"
+    },
+    {
+      "name": "HomePage",
+      "description": "Landing page for the application, relevant to the administrator.",
+      "path": "src/pages/HomePage.tsx"
+    },
+    {
+      "name": "LoginPage",
+      "description": "Form for user login, utilizing the authService.",
+      "path": "src/pages/LoginPage.tsx"
+    },
+    {
+      "name": "RegisterPage",
+      "description": "Form for user registration, using the authService.",
+      "path": "src/pages/RegisterPage.tsx"
+    }
+  ]
+}
