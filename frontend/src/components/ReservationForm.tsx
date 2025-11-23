@@ -54,10 +54,10 @@ export default function ReservationForm({
 
   // Calculate dates
   const today = new Date();
-  const endDate = new Date(today);
-  endDate.setDate(endDate.getDate() + 30);
-  
   const duration = 10; // Fixed 10 days for pricing
+  const endDate = new Date(today);
+  endDate.setDate(endDate.getDate() + 30); // 30 days reservation period
+  
   const totalAmount = basePrice * duration;
 
   const handleGenreToggle = (genre: string) => {
@@ -122,6 +122,7 @@ export default function ReservationForm({
         stallId,
         startDate: today.toISOString(),
         endDate: endDate.toISOString(),
+        duration: duration, // 10 days for pricing calculation
         purpose,
         specialRequests: specialRequests.trim() || undefined
       };
