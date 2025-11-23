@@ -23,18 +23,22 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Dashboard
-            </Link>
-            <Link to="/stalls" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Stalls
-            </Link>
-            <Link to="/reservations" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Reservations
-            </Link>
-            <Link to="/users" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Users
-            </Link>
+            {user && (
+              <>
+                <Link to="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Dashboard
+                </Link>
+                <Link to="/stalls" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Stalls
+                </Link>
+                <Link to="/reservations" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Reservations
+                </Link>
+                <Link to="/users" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
+                  Users
+                </Link>
+              </>
+            )}
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -43,7 +47,7 @@ export default function Header() {
                 <div className="flex items-center space-x-2">
                   <User className="h-4 w-4" />
                   <span className="text-sm text-gray-700">
-                    {user.firstName} {user.lastName}
+                    {user.name}
                   </span>
                 </div>
                 <Button variant="ghost" size="sm">
