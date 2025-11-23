@@ -19,14 +19,6 @@ const generateQRCode = async (reservation, user) => {
     const qrData = {
       reservationId: reservation._id.toString(),
       reservationNumber: reservation.reservationNumber,
-      userId: user._id.toString(),
-      userEmail: user.email,
-      stallId: reservation.stall._id ? reservation.stall._id.toString() : reservation.stall,
-      stallName: reservation.stall.name || 'N/A',
-      startDate: reservation.startDate,
-      endDate: reservation.endDate,
-      totalAmount: reservation.totalAmount,
-      status: reservation.status,
       generatedAt: new Date().toISOString(),
       hash: '',
     };
@@ -36,9 +28,14 @@ const generateQRCode = async (reservation, user) => {
 
     // Encrypt data
     const encryptedData = encrypt(qrData);
+    
+    console.log(`Generated encrypted QR data: ${encryptedData.substring(0, 100)}...`);
+    console.log(`Encrypted data length: ${encryptedData.length}`);
 
     // Generate QR code image (base64)
     const qrCodeImage = await QRCode.toDataURL(encryptedData, qrConfig.options);
+    
+    console.log(`QR code generated for reservation ${qrData.reservationNumber}, contains encrypted data`);
 
     // Calculate expiry (reservation end date + 7 days)
     const expiresAt = new Date(reservation.endDate);
