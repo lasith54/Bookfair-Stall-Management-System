@@ -44,7 +44,11 @@ exports.createReservationValidation = [
   body('specialRequests')
     .optional()
     .trim()
-    .isLength({ max: 1000 }).withMessage('Special requests cannot exceed 1000 characters')
+    .isLength({ max: 1000 }).withMessage('Special requests cannot exceed 1000 characters'),
+  
+  body('duration')
+    .optional()
+    .isInt({ min: 1, max: 30 }).withMessage('Duration must be between 1 and 30 days')
 ];
 
 // Cancel reservation validation
