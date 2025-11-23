@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000';
 
 export interface CreateReservationRequest {
   stallId: string;
@@ -42,7 +42,7 @@ export interface CheckAvailabilityRequest {
 
 class ReservationService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -50,18 +50,46 @@ class ReservationService {
   }
 
   async createReservation(data: CreateReservationRequest): Promise<{ success: boolean; data: Reservation }> {
-    const response = await fetch(`${API_BASE_URL}/api/reservations`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
     
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create reservation');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reservations`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        // Handle empty response body for timeout or server errors
+        let errorMessage = 'Failed to create reservation';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+        } catch (e) {
+          // Response has no JSON body
+          if (response.status === 408) {
+            errorMessage = 'Request timed out. The server took too long to respond. Please try again.';
+          } else if (response.status === 500) {
+            errorMessage = 'Server error occurred. Please try again later.';
+          } else {
+            errorMessage = `Request failed with status ${response.status}`;
+          }
+        }
+        throw new Error(errorMessage);
+      }
+      
+      return response.json();
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        throw new Error('Request timed out after 30 seconds. Please check if all services are running.');
+      }
+      throw err;
     }
-    
-    return response.json();
   }
 
   async getMyReservations(): Promise<{ success: boolean; data: { reservations: Reservation[] } }> {

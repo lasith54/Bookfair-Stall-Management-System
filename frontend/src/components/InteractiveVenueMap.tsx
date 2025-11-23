@@ -1,133 +1,114 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { stallService } from "../../services/stallService";
+import { reservationService } from "../../services/reservationService";
+import ReservationForm from "./ReservationForm";
 
 interface Stall {
   id: string;
+  _id: string; // MongoDB ID
+  stallNumber: string;
   x: number;
   y: number;
   width: number;
   height: number;
   status: "available" | "reserved" | "yours";
   name: string;
+  realWidth?: number;
+  realLength?: number;
+  price?: number;
+  zone?: string;
 }
 
 export default function InteractiveVenueMap() {
   const [hoveredStall, setHoveredStall] = useState<string | null>(null);
   const [selectedStall, setSelectedStall] = useState<string | null>(null);
+  const [stalls, setStalls] = useState<Stall[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isReservationModalOpen, setIsReservationModalOpen] = useState(false);
+  const [stallToReserve, setStallToReserve] = useState<Stall | null>(null);
 
-  // Sample stall data - representing the venue layout from the image
-  const stalls: Stall[] = [
-    // LEFT COLUMN (Far Left)
-    { id: "L1", x: 30, y: 50, width: 40, height: 35, status: "available", name: "Stall L1" },
-    { id: "L2", x: 30, y: 90, width: 40, height: 35, status: "reserved", name: "Stall L2" },
-    { id: "L3", x: 30, y: 130, width: 40, height: 35, status: "available", name: "Stall L3" },
-    { id: "L4", x: 30, y: 170, width: 40, height: 35, status: "available", name: "Stall L4" },
-    { id: "L5", x: 30, y: 210, width: 40, height: 75, status: "yours", name: "Stall L5" },
-    
-    // SECTION A (Second from left) - Top Row
-    { id: "A1", x: 120, y: 50, width: 40, height: 35, status: "available", name: "Stall A1" },
-    { id: "A2", x: 165, y: 50, width: 40, height: 35, status: "reserved", name: "Stall A2" },
-    { id: "A3", x: 120, y: 90, width: 40, height: 35, status: "available", name: "Stall A3" },
-    { id: "A4", x: 165, y: 90, width: 40, height: 35, status: "available", name: "Stall A4" },
-    { id: "A5", x: 120, y: 130, width: 40, height: 35, status: "reserved", name: "Stall A5" },
-    { id: "A6", x: 165, y: 130, width: 40, height: 35, status: "available", name: "Stall A6" },
-    { id: "A7", x: 120, y: 170, width: 40, height: 35, status: "available", name: "Stall A7" },
-    { id: "A8", x: 165, y: 170, width: 40, height: 35, status: "reserved", name: "Stall A8" },
-    { id: "A9", x: 120, y: 210, width: 40, height: 75, status: "available", name: "Stall A9" },
-    { id: "A10", x: 165, y: 210, width: 40, height: 75, status: "available", name: "Stall A10" },
-    
-    // SECTION B (Middle left) - Top Row
-    { id: "B1", x: 255, y: 50, width: 40, height: 35, status: "available", name: "Stall B1" },
-    { id: "B2", x: 300, y: 50, width: 40, height: 35, status: "available", name: "Stall B2" },
-    { id: "B3", x: 255, y: 90, width: 40, height: 35, status: "reserved", name: "Stall B3" },
-    { id: "B4", x: 300, y: 90, width: 40, height: 35, status: "available", name: "Stall B4" },
-    { id: "B5", x: 255, y: 130, width: 40, height: 35, status: "available", name: "Stall B5" },
-    { id: "B6", x: 300, y: 130, width: 40, height: 35, status: "reserved", name: "Stall B6" },
-    { id: "B7", x: 255, y: 170, width: 40, height: 35, status: "available", name: "Stall B7" },
-    { id: "B8", x: 300, y: 170, width: 40, height: 35, status: "available", name: "Stall B8" },
-    { id: "B9", x: 255, y: 210, width: 40, height: 75, status: "reserved", name: "Stall B9" },
-    { id: "B10", x: 300, y: 210, width: 40, height: 75, status: "available", name: "Stall B10" },
-    
-    // SECTION C (Middle right) - Top Row
-    { id: "C1", x: 390, y: 50, width: 40, height: 35, status: "available", name: "Stall C1" },
-    { id: "C2", x: 435, y: 50, width: 40, height: 35, status: "reserved", name: "Stall C2" },
-    { id: "C3", x: 390, y: 90, width: 40, height: 35, status: "available", name: "Stall C3" },
-    { id: "C4", x: 435, y: 90, width: 40, height: 35, status: "available", name: "Stall C4" },
-    { id: "C5", x: 390, y: 130, width: 40, height: 35, status: "available", name: "Stall C5" },
-    { id: "C6", x: 435, y: 130, width: 40, height: 35, status: "reserved", name: "Stall C6" },
-    { id: "C7", x: 390, y: 170, width: 40, height: 35, status: "available", name: "Stall C7" },
-    { id: "C8", x: 435, y: 170, width: 40, height: 35, status: "available", name: "Stall C8" },
-    { id: "C9", x: 390, y: 210, width: 40, height: 75, status: "available", name: "Stall C9" },
-    { id: "C10", x: 435, y: 210, width: 40, height: 75, status: "reserved", name: "Stall C10" },
-    
-    // RIGHT COLUMN (Far Right)
-    { id: "R1", x: 525, y: 50, width: 40, height: 35, status: "available", name: "Stall R1" },
-    { id: "R2", x: 525, y: 90, width: 40, height: 35, status: "available", name: "Stall R2" },
-    { id: "R3", x: 525, y: 130, width: 40, height: 35, status: "reserved", name: "Stall R3" },
-    { id: "R4", x: 525, y: 170, width: 40, height: 35, status: "available", name: "Stall R4" },
-    { id: "R5", x: 525, y: 210, width: 40, height: 75, status: "available", name: "Stall R5" },
-    
-    // MIDDLE HORIZONTAL SECTION - Large Stalls
-    { id: "M1", x: 55, y: 305, width: 120, height: 50, status: "available", name: "Stall M1" },
-    { id: "M2", x: 185, y: 305, width: 100, height: 50, status: "reserved", name: "Stall M2" },
-    { id: "M3", x: 295, y: 305, width: 110, height: 50, status: "available", name: "Stall M3" },
-    { id: "M4", x: 415, y: 305, width: 130, height: 50, status: "available", name: "Stall M4" },
-    
-    // LOWER HORIZONTAL SECTION - Extra Large Stalls
-    { id: "X1", x: 45, y: 370, width: 110, height: 45, status: "reserved", name: "Stall X1" },
-    { id: "X2", x: 165, y: 370, width: 110, height: 45, status: "available", name: "Stall X2" },
-    { id: "X3", x: 285, y: 370, width: 110, height: 45, status: "available", name: "Stall X3" },
-    { id: "X4", x: 405, y: 370, width: 125, height: 45, status: "yours", name: "Stall X4" },
-    
-    // BOTTOM LEFT COLUMN
-    { id: "BL1", x: 30, y: 440, width: 40, height: 60, status: "available", name: "Stall BL1" },
-    { id: "BL2", x: 30, y: 505, width: 40, height: 35, status: "available", name: "Stall BL2" },
-    { id: "BL3", x: 30, y: 545, width: 40, height: 35, status: "reserved", name: "Stall BL3" },
-    { id: "BL4", x: 30, y: 585, width: 40, height: 35, status: "available", name: "Stall BL4" },
-    { id: "BL5", x: 30, y: 625, width: 40, height: 35, status: "available", name: "Stall BL5" },
-    
-    // SECTION D (Second from left) - Bottom Row
-    { id: "D1", x: 120, y: 440, width: 40, height: 60, status: "available", name: "Stall D1" },
-    { id: "D2", x: 165, y: 440, width: 40, height: 35, status: "available", name: "Stall D2" },
-    { id: "D3", x: 120, y: 505, width: 40, height: 35, status: "reserved", name: "Stall D3" },
-    { id: "D4", x: 165, y: 505, width: 40, height: 35, status: "available", name: "Stall D4" },
-    { id: "D5", x: 120, y: 545, width: 40, height: 35, status: "available", name: "Stall D5" },
-    { id: "D6", x: 165, y: 545, width: 40, height: 35, status: "reserved", name: "Stall D6" },
-    { id: "D7", x: 120, y: 585, width: 40, height: 35, status: "available", name: "Stall D7" },
-    { id: "D8", x: 165, y: 585, width: 40, height: 35, status: "available", name: "Stall D8" },
-    { id: "D9", x: 120, y: 625, width: 40, height: 35, status: "available", name: "Stall D9" },
-    { id: "D10", x: 165, y: 625, width: 40, height: 35, status: "reserved", name: "Stall D10" },
-    
-    // SECTION E (Middle left) - Bottom Row
-    { id: "E1", x: 255, y: 440, width: 40, height: 60, status: "available", name: "Stall E1" },
-    { id: "E2", x: 300, y: 440, width: 40, height: 35, status: "available", name: "Stall E2" },
-    { id: "E3", x: 255, y: 505, width: 40, height: 35, status: "available", name: "Stall E3" },
-    { id: "E4", x: 300, y: 505, width: 40, height: 35, status: "reserved", name: "Stall E4" },
-    { id: "E5", x: 255, y: 545, width: 40, height: 35, status: "available", name: "Stall E5" },
-    { id: "E6", x: 300, y: 545, width: 40, height: 35, status: "available", name: "Stall E6" },
-    { id: "E7", x: 255, y: 585, width: 40, height: 35, status: "reserved", name: "Stall E7" },
-    { id: "E8", x: 300, y: 585, width: 40, height: 35, status: "available", name: "Stall E8" },
-    { id: "E9", x: 255, y: 625, width: 40, height: 35, status: "available", name: "Stall E9" },
-    { id: "E10", x: 300, y: 625, width: 40, height: 35, status: "available", name: "Stall E10" },
-    
-    // SECTION F (Middle right) - Bottom Row
-    { id: "F1", x: 390, y: 440, width: 40, height: 60, status: "reserved", name: "Stall F1" },
-    { id: "F2", x: 435, y: 440, width: 40, height: 35, status: "available", name: "Stall F2" },
-    { id: "F3", x: 390, y: 505, width: 40, height: 35, status: "available", name: "Stall F3" },
-    { id: "F4", x: 435, y: 505, width: 40, height: 35, status: "available", name: "Stall F4" },
-    { id: "F5", x: 390, y: 545, width: 40, height: 35, status: "available", name: "Stall F5" },
-    { id: "F6", x: 435, y: 545, width: 40, height: 35, status: "reserved", name: "Stall F6" },
-    { id: "F7", x: 390, y: 585, width: 40, height: 35, status: "available", name: "Stall F7" },
-    { id: "F8", x: 435, y: 585, width: 40, height: 35, status: "available", name: "Stall F8" },
-    { id: "F9", x: 390, y: 625, width: 40, height: 35, status: "reserved", name: "Stall F9" },
-    { id: "F10", x: 435, y: 625, width: 40, height: 35, status: "available", name: "Stall F10" },
-    
-    // BOTTOM RIGHT COLUMN
-    { id: "BR1", x: 525, y: 440, width: 40, height: 60, status: "available", name: "Stall BR1" },
-    { id: "BR2", x: 525, y: 505, width: 40, height: 35, status: "reserved", name: "Stall BR2" },
-    { id: "BR3", x: 525, y: 545, width: 40, height: 35, status: "available", name: "Stall BR3" },
-    { id: "BR4", x: 525, y: 585, width: 40, height: 35, status: "available", name: "Stall BR4" },
-    { id: "BR5", x: 525, y: 625, width: 40, height: 35, status: "available", name: "Stall BR5" },
-  ];
+  useEffect(() => {
+    const fetchStallsAndReservations = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch stalls and user's reservations in parallel
+        const [stallsResponse, reservationsResponse] = await Promise.all([
+          stallService.getAllStalls(),
+          reservationService.getMyReservations().catch(() => ({ success: false, data: { reservations: [] } }))
+        ]);
+        
+        if (stallsResponse.success && stallsResponse.data.stalls) {
+          // Get user's reserved stall IDs
+          // Handle both string stallId and populated stallId object
+          const myStallIds = new Set(
+            reservationsResponse.success
+              ? reservationsResponse.data.reservations
+                  .filter((r: any) => r.status === 'confirmed' || r.status === 'pending')
+                  .map((r: any) => {
+                    // stallId can be a string or an object with _id
+                    return typeof r.stallId === 'string' ? r.stallId : r.stallId._id;
+                  })
+              : []
+          );
+
+          console.log('My reserved stall IDs:', Array.from(myStallIds));
+
+          // Transform API data to component format
+          const transformedStalls = stallsResponse.data.stalls.map((stall: any) => {
+            // Parse SVG coordinates from notes field
+            let svgCoords = { x: 0, y: 0, width: 40, height: 35 };
+            try {
+              if (stall.notes) {
+                const parsed = JSON.parse(stall.notes);
+                if (parsed.svg) {
+                  svgCoords = parsed.svg;
+                }
+              }
+            } catch (e) {
+              console.warn(`Failed to parse notes for stall ${stall.stallNumber}`, e);
+            }
+
+            // Determine status: yours > reserved > available
+            let status: "available" | "reserved" | "yours" = "available";
+            if (myStallIds.has(stall._id)) {
+              status = "yours";
+            } else if (stall.status !== "available") {
+              status = "reserved";
+            }
+
+            return {
+              id: stall.stallNumber,
+              _id: stall._id, // MongoDB ID
+              stallNumber: stall.stallNumber,
+              x: svgCoords.x,
+              y: svgCoords.y,
+              width: svgCoords.width,
+              height: svgCoords.height,
+              status,
+              name: `Stall ${stall.stallNumber}`,
+              realWidth: stall.dimensions?.width,
+              realLength: stall.dimensions?.length,
+              price: stall.pricing?.basePrice,
+              zone: stall.location?.zone
+            };
+          });
+          
+          setStalls(transformedStalls);
+        } else {
+          setError("Failed to load stalls");
+        }
+      } catch (err) {
+        console.error("Error fetching stalls:", err);
+        setError("Failed to load stalls from server");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStallsAndReservations();
+  }, []);
 
   const getStallColor = (status: string, isHovered: boolean, isSelected: boolean) => {
     // Don't allow selection color for reserved stalls
@@ -153,6 +134,61 @@ export default function InteractiveVenueMap() {
   };
 
   const selectedStallData = stalls.find(s => s.id === selectedStall);
+
+  const handleReserveClick = () => {
+    if (selectedStallData && selectedStallData.status === "available") {
+      setStallToReserve(selectedStallData);
+      setIsReservationModalOpen(true);
+    }
+  };
+
+  const handleReservationSuccess = () => {
+    setIsReservationModalOpen(false);
+    setStallToReserve(null);
+    setSelectedStall(null);
+    // Refresh stalls to update status
+    window.location.reload();
+  };
+
+  const handleReservationCancel = () => {
+    setIsReservationModalOpen(false);
+    setStallToReserve(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading venue map...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || stalls.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <svg className="mx-auto h-16 w-16 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Venue Map</h3>
+            <p className="text-gray-600 mb-4">{error || "No stall data available"}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6">
@@ -279,17 +315,25 @@ export default function InteractiveVenueMap() {
               </span>
             </div>
             <div>
-              <span className="font-semibold">Size:</span> {selectedStallData.width}x{selectedStallData.height}
+              <span className="font-semibold">Dimensions:</span> {selectedStallData.realWidth || '?'}m x {selectedStallData.realLength || '?'}m
             </div>
             <div>
-              <span className="font-semibold">Location:</span> Section {selectedStallData.id.charAt(0)}
+              <span className="font-semibold">Location:</span> Zone {selectedStallData.zone || selectedStallData.id.charAt(0)}
             </div>
             <div>
-              <span className="font-semibold">Booth ID:</span> {selectedStallData.id}
+              <span className="font-semibold">Booth ID:</span> {selectedStallData.stallNumber}
             </div>
+            {selectedStallData.price && (
+              <div className="col-span-2">
+                <span className="font-semibold">Price:</span> LKR {selectedStallData.price.toLocaleString()}/day
+              </div>
+            )}
           </div>
           {selectedStallData.status === "available" && (
-            <button className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
+            <button 
+              onClick={handleReserveClick}
+              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
               Reserve This Stall
             </button>
           )}
@@ -299,6 +343,18 @@ export default function InteractiveVenueMap() {
             </button>
           )}
         </div>
+      )}
+
+      {/* Reservation Modal */}
+      {isReservationModalOpen && stallToReserve && (
+        <ReservationForm
+          stallId={stallToReserve._id}
+          stallNumber={stallToReserve.stallNumber}
+          basePrice={stallToReserve.price || 0}
+          zone={stallToReserve.zone}
+          onSuccess={handleReservationSuccess}
+          onCancel={handleReservationCancel}
+        />
       )}
     </div>
   );

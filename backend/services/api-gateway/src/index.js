@@ -139,6 +139,14 @@ app.use(
     changeOrigin: true,
     onProxyReq: (proxyReq, req, res) => {
       console.log(`[Reservation Service] ${req.method} ${req.path}`);
+      
+      // Re-stream the body if it was parsed by express.json()
+      if (req.body) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
     },
     onError: (err, req, res) => {
       console.error('Reservation Service Error:', err.message);
