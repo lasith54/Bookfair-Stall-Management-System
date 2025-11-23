@@ -18,7 +18,7 @@ exports.createReservation = async (req, res) => {
       });
     }
 
-    const { stallId, startDate, endDate, purpose, specialRequests } = req.body;
+    const { stallId, startDate, endDate, purpose, specialRequests, duration: providedDuration } = req.body;
     const userId = req.user.userId;
 
     // Validate and fetch stall details from stall service
@@ -38,11 +38,14 @@ exports.createReservation = async (req, res) => {
     // Calculate duration
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const actualDuration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    
+    // Use provided duration for pricing if given, otherwise use actual duration
+    const pricingDuration = providedDuration || actualDuration;
 
-    // Calculate total amount
+    // Calculate total amount based on pricing duration
     const basePrice = stallData.pricing.basePrice;
-    const totalAmount = calculateTotalAmount(basePrice, duration);
+    const totalAmount = calculateTotalAmount(basePrice, pricingDuration);
 
     // Create reservation with auto-approved and paid status
     const reservation = await Reservation.create({
@@ -51,7 +54,7 @@ exports.createReservation = async (req, res) => {
       reservationNumber,
       startDate: start,
       endDate: end,
-      duration,
+      duration: actualDuration,
       basePrice,
       totalAmount,
       paidAmount: totalAmount,
