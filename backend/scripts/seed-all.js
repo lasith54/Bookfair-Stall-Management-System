@@ -19,12 +19,7 @@ const userSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
+// Note: We manually hash passwords before insertMany() since pre-save hooks don't run with insertMany()
 
 const stallCategorySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true, trim: true },
@@ -77,7 +72,7 @@ const Stall = mongoose.model('Stall', stallSchema);
 const users = [
   {
     email: 'admin@bookfair.com',
-    password: 'Admin@123',
+    password: 'Admin@123', // Will be hashed during seeding
     name: 'System Admin',
     contactNumber: '+94700000000',
     role: 'admin',
@@ -86,7 +81,7 @@ const users = [
   },
   {
     email: 'employee@bookfair.com',
-    password: 'Employee@123',
+    password: 'Employee@123', // Will be hashed during seeding
     name: 'Employee User',
     contactNumber: '+94700000001',
     role: 'employee',
@@ -95,7 +90,7 @@ const users = [
   },
   {
     email: 'vendor@example.com',
-    password: 'Vendor@123',
+    password: 'Vendor@123', // Will be hashed during seeding
     name: 'John Vendor',
     businessName: 'John\'s Bookstore',
     contactNumber: '+94712345678',
@@ -106,7 +101,7 @@ const users = [
   },
   {
     email: 'publisher@example.com',
-    password: 'Publisher@123',
+    password: 'Publisher@123', // Will be hashed during seeding
     name: 'Jane Publisher',
     businessName: 'ABC Publishing House',
     contactNumber: '+94723456789',
@@ -117,7 +112,7 @@ const users = [
   },
   {
     email: 'vendor2@example.com',
-    password: 'Vendor@123',
+    password: 'Vendor@123', // Will be hashed during seeding
     name: 'Sarah Books',
     businessName: 'Sarah\'s Literature Corner',
     contactNumber: '+94734567890',
@@ -346,9 +341,19 @@ async function seedAll() {
     await Stall.deleteMany({});
     console.log('Database cleared\n');
 
-    // Seed Users
+    // Seed Users - Hash passwords before inserting
     console.log('👥 Creating users...');
-    const createdUsers = await User.insertMany(users);
+    const usersWithHashedPasswords = await Promise.all(
+      users.map(async (user) => {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(user.password, salt);
+        return {
+          ...user,
+          password: hashedPassword
+        };
+      })
+    );
+    const createdUsers = await User.insertMany(usersWithHashedPasswords);
     console.log(`Created ${createdUsers.length} users`);
     users.forEach(u => {
       console.log(`   - ${u.role.toUpperCase()}: ${u.email} / ${u.password}`);
