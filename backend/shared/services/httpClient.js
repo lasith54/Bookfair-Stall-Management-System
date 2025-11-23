@@ -103,6 +103,22 @@ class ServiceClient {
   }
 
   /**
+   * PATCH request
+   * @param {string} endpoint - API endpoint
+   * @param {object} data - Request body
+   * @param {object} config - Axios config
+   * @returns {Promise} Response data
+   */
+  async patch(endpoint, data = {}, config = {}) {
+    try {
+      const response = await this.client.patch(endpoint, data, config);
+      return response.data;
+    } catch (error) {
+      this.handleError(error, 'PATCH', endpoint);
+    }
+  }
+
+  /**
    * DELETE request
    * @param {string} endpoint - API endpoint
    * @param {object} config - Axios config
