@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3000';
 
 export interface Stall {
   _id: string;
@@ -32,15 +32,15 @@ export interface Stall {
 
 class StallService {
   private getAuthHeaders() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     return {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
   }
 
-  async getAllStalls(): Promise<{ success: boolean; data: Stall[] }> {
-    const response = await fetch(`${API_BASE_URL}/api/stalls`, {
+  async getAllStalls(): Promise<{ success: boolean; data: { stalls: any[] } }> {
+    const response = await fetch(`${API_BASE_URL}/api/stalls?limit=200`, {
       headers: this.getAuthHeaders(),
     });
     
