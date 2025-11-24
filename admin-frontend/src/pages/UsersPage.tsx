@@ -212,7 +212,7 @@ export default function UsersPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
       <Header />
       
-      <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-12">
         {/* Check if user is still loading */}
         {authLoading && (
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -246,13 +246,18 @@ export default function UsersPage() {
         {!authLoading && user && (user.role === 'admin' || user.role === 'employee') && (
           <>
             {/* Header Section */}
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h1 className="text-4xl font-bold text-blue-950 mb-4 text-center">
-                Users Management
-              </h1>
-              <p className="text-lg text-gray-700 text-center">
-                Manage user accounts, roles, and permissions
-              </p>
+            <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl shadow-2xl p-10 mb-8 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2">
+                    Users Management
+                  </h1>
+                  <p className="text-lg text-blue-100">
+                    Manage user accounts, roles, and permissions
+                  </p>
+                </div>
+                <Users className="h-20 w-20 text-blue-300 opacity-50" />
+              </div>
             </div>
 
         {/* Error Message */}
@@ -267,42 +272,50 @@ export default function UsersPage() {
         {/* Stats Cards */}
         {userStats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-600 mr-3" />
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-l-4 border-blue-600">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.totalUsers}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                  <p className="text-3xl font-bold text-gray-900">{userStats.totalUsers}</p>
+                </div>
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <Users className="h-8 w-8 text-blue-600" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <Shield className="h-8 w-8 text-green-600 mr-3" />
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-l-4 border-green-600">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Admins & Employees</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.admins + userStats.employees}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Admins & Employees</p>
+                  <p className="text-3xl font-bold text-gray-900">{userStats.admins + userStats.employees}</p>
+                </div>
+                <div className="bg-green-100 p-3 rounded-lg">
+                  <Shield className="h-8 w-8 text-green-600" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-purple-600 mr-3" />
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-l-4 border-purple-600">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Vendors & Publishers</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.vendors + userStats.publishers}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Vendors & Publishers</p>
+                  <p className="text-3xl font-bold text-gray-900">{userStats.vendors + userStats.publishers}</p>
+                </div>
+                <div className="bg-purple-100 p-3 rounded-lg">
+                  <Users className="h-8 w-8 text-purple-600" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="flex items-center">
-                <Settings className="h-8 w-8 text-orange-600 mr-3" />
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border-l-4 border-orange-600">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.activeUsers}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Active</p>
+                  <p className="text-3xl font-bold text-gray-900">{userStats.activeUsers}</p>
+                </div>
+                <div className="bg-orange-100 p-3 rounded-lg">
+                  <Settings className="h-8 w-8 text-orange-600" />
                 </div>
               </div>
             </div>
@@ -310,7 +323,7 @@ export default function UsersPage() {
         )}
         
         {/* Controls */}
-        <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <div className="bg-white shadow-lg rounded-xl p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               {/* Search */}
@@ -398,7 +411,7 @@ export default function UsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
             <div className="flex justify-center">
               <nav className="flex space-x-2">
                 <Button
