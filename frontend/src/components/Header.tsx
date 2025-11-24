@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../contexts/AuthContext";
 import cibfLogo from "@/assets/CIBF-Logo-Web.png";
@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export default function Header({ title = "Book Fair" }: HeaderProps) {
   const { user, logout } = useAuth();
+  const location = useLocation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,9 +51,14 @@ export default function Header({ title = "Book Fair" }: HeaderProps) {
           
           <div className="flex items-center space-x-4">
             {user && (
-              <Link to="/dashboard" className="text-blue-800 hover:text-blue-900 font-semibold text-lg transition-colors">
-                Dashboard
-              </Link>
+              <>
+                <Link to="/" className={`text-blue-800 font-semibold text-lg transition-colors pb-1 ${location.pathname === '/' ? 'border-b-2 border-blue-800' : 'hover:text-blue-900 hover:border-b-2 hover:border-blue-800'}`}>
+                  Home
+                </Link>
+                <Link to="/dashboard" className={`text-blue-800 font-semibold text-lg transition-colors pb-1 ${location.pathname === '/dashboard' ? 'border-b-2 border-blue-800' : 'hover:text-blue-900 hover:border-b-2 hover:border-blue-800'}`}>
+                  Dashboard
+                </Link>
+              </>
             )}
             
             {user ? (

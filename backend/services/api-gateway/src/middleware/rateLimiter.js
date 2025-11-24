@@ -15,7 +15,7 @@ const generalLimiter = rateLimit({
 // Strict rate limiter for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000,
+  max: 10000, // Increased for development
   skipSuccessfulRequests: true,
   message: {
     success: false,
