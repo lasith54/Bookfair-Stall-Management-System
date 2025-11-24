@@ -61,7 +61,7 @@ export default function Header({ title = "Admin Panel" }: HeaderProps) {
               <>
                 <Link
                   to="/"
-                  className={`relative no-underline text-blue-800 font-semibold text-lg pb-1 group
+                  className={`relative no-underline hover:no-underline text-blue-800 font-semibold text-lg pb-1
                     ${location.pathname === "/" ? "text-blue-900 border-b-2 border-blue-900" : "hover:text-blue-900"}
                   `}
                 >
@@ -70,7 +70,7 @@ export default function Header({ title = "Admin Panel" }: HeaderProps) {
 
                 <Link
                   to="/stalls"
-                  className={`relative no-underline text-blue-800 font-semibold text-lg pb-1 group
+                  className={`relative no-underline hover:no-underline text-blue-800 font-semibold text-lg pb-1
                     ${location.pathname === "/stalls" ? "text-blue-900 border-b-2 border-blue-900" : "hover:text-blue-900"}
                   `}
                 >
@@ -79,7 +79,7 @@ export default function Header({ title = "Admin Panel" }: HeaderProps) {
 
                 <Link
                   to="/users"
-                  className={`relative no-underline text-blue-800 font-semibold text-lg pb-1 group
+                  className={`relative no-underline hover:no-underline text-blue-800 font-semibold text-lg pb-1
                     ${location.pathname === "/users" ? "text-blue-900 border-b-2 border-blue-900" : "hover:text-blue-900"}
                   `}
                 >
