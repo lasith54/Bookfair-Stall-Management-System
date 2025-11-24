@@ -12,8 +12,7 @@ export default function HeroCarousel() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000); // Change slide every 5 seconds
-
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -22,26 +21,24 @@ export default function HeroCarousel() {
   };
 
   return (
-    <div className="relative w-full h-[500px] overflow-hidden rounded-lg">
+    <div className="relative w-full h-full overflow-hidden rounded-lg">
       {/* Images */}
-      <div className="relative w-full h-full">
-        {images.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentIndex ? "opacity-100" : "opacity-0"
-            }`}
-          >
-            <img
-              src={image}
-              alt={`Slide ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            {/* Overlay for better text readability */}
-            <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          </div>
-        ))}
-      </div>
+      {images.map((image, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ${
+            index === currentIndex ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <img
+            src={image}
+            alt={`Slide ${index + 1}`}
+            className="w-full h-full object-cover block"
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+        </div>
+      ))}
 
       {/* Dots Indicator */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -49,9 +46,9 @@ export default function HeroCarousel() {
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
+            className={`w-2 h-2 rounded-full transition-all ${
               index === currentIndex
-                ? "bg-white w-8"
+                ? "bg-white"
                 : "bg-white/50 hover:bg-white/75"
             }`}
             aria-label={`Go to slide ${index + 1}`}
