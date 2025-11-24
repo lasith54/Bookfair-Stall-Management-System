@@ -80,11 +80,12 @@ export default function HomePage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="text-base sm:text-lg px-6 py-2 border-white/70 text-black hover:bg-white/10 backdrop-blur-md"
+                    className="text-black border-white/70 px-8 py-3 text-base sm:text-lg hover:bg-white/20 hover:text-white backdrop-blur-md transition-colors"
                     onClick={() => navigate("/hall-map")}
                   >
                     Explore Hall Layout
                   </Button>
+
                 </>
               )}
             </div>
