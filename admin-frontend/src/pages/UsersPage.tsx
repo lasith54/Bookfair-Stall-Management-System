@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { Users, UserPlus, Shield, Settings, Search, Filter, Download, RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import userService, { User, UserStats, CreateUserData } from '../services/userService';
+import userService, { User, UserStats, CreateUserData, UpdateUserData } from '../services/userService';
 import CreateUserModal from '../components/CreateUserModal';
+import EditUserModal from '../components/EditUserModal';
 import UsersTable from '../components/UsersTable';
 import UserDetailsModal from '../components/UserDetailsModal';
 import ErrorMessage from '../components/ErrorMessage';
@@ -17,6 +18,7 @@ export default function UsersPage() {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,6 +130,22 @@ export default function UsersPage() {
       ]);
     } catch (error: any) {
       console.error('Create user error:', error);
+      throw error;
+    }
+  };
+
+  // Edit user
+  const handleEditUser = async (userData: UpdateUserData) => {
+    if (!selectedUser) return;
+    
+    try {
+      await userService.updateUser(selectedUser._id, userData);
+      await Promise.all([
+        loadUsers(currentPage, searchTerm, roleFilter, statusFilter),
+        loadUserStats(),
+      ]);
+    } catch (error: any) {
+      console.error('Edit user error:', error);
       throw error;
     }
   };
@@ -249,7 +267,7 @@ export default function UsersPage() {
             <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl shadow-2xl p-10 mb-8 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">
+                  <h1 className="text-4xl font-bold mb-2 text-white">
                     Users Management
                   </h1>
                   <p className="text-lg text-blue-100">
@@ -398,7 +416,7 @@ export default function UsersPage() {
           loading={loading}
           onEdit={(user) => {
             setSelectedUser(user);
-            // TODO: Open edit modal
+            setIsEditModalOpen(true);
           }}
           onDelete={handleDeleteUser}
           onToggleStatus={handleToggleStatus}
@@ -466,6 +484,14 @@ export default function UsersPage() {
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateUser}
         isLoading={false}
+      />
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSubmit={handleEditUser}
+        isLoading={false}
+        user={selectedUser}
       />
 
       <UserDetailsModal
