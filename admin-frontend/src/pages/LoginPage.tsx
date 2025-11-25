@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
+import Header from '../components/Header';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import cibfLogo from '../assets/CIBF-Logo-Web.png';
 
@@ -50,8 +51,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header title="Admin Login" />
+      <div className="flex items-center justify-center p-4 pt-8">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <img 
             src={cibfLogo} 
@@ -124,6 +127,7 @@ export default function LoginPage() {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
         </form>
+        </div>
       </div>
     </div>
   );

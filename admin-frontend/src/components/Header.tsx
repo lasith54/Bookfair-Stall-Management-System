@@ -51,7 +51,7 @@ export default function Header({ title = "Admin Panel" }: HeaderProps) {
                 Colombo International
               </h1>
               <h2 className="text-3xl font-bold text-blue-800 leading-tight">
-                Book Fair
+                {title}
               </h2>
             </div>
           </div>

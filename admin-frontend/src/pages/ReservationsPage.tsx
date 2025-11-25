@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 export default function ReservationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
-      <Header />
+      <Header title="Reservation Management" />
       
       <main className="w-full px-4 sm:px-6 lg:px-8 py-16">
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
