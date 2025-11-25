@@ -23,8 +23,9 @@ docker compose up --build
 ### 2. Initialize Database
 ```bash
 cd backend
-npm run db:init
-npm run db:seed
+npm install             
+npm run db:init         
+npm run db:seed         
 ```
 
 ## Access URLs
@@ -88,17 +89,20 @@ Publisher: publisher@example.com / Publisher@123
 ### Backend Only
 ```bash
 cd backend
-npm run docker:dev
+npm install             
+npm run docker:dev       
 ```
 
 ### Frontend Only
 ```bash
-# Customer
+# Customer Portal
 cd frontend
+npm install
 npm run dev
 
-# Admin
+# Admin Portal
 cd admin-frontend
+npm install
 npm run dev
 ```
 
@@ -106,11 +110,12 @@ npm run dev
 
 ```bash
 cd backend
-npm run db:init      # Initialize
-npm run db:seed      # Seed data
-npm run db:clear     # Clear all
-npm run db:reset     # Clear & reseed
-npm run db:status    # Check status
+npm install              
+npm run db:init          
+npm run db:seed          
+npm run db:clear         
+npm run db:reset         
+npm run db:status        
 ```
 
 ## Project Structure

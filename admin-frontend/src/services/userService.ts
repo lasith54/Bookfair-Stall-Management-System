@@ -28,6 +28,13 @@ export interface CreateUserData {
   role: string;
 }
 
+export interface UpdateUserData {
+  email?: string;
+  name?: string;
+  role?: string;
+  isActive?: boolean;
+}
+
 class UserService {
   private api = axios.create({
     baseURL: API_BASE_URL,
@@ -67,6 +74,11 @@ class UserService {
 
   async createUser(userData: CreateUserData) {
     const response = await this.api.post('/auth/admin/users', userData);
+    return response.data;
+  }
+
+  async updateUser(userId: string, userData: UpdateUserData) {
+    const response = await this.api.put(`/auth/admin/users/${userId}`, userData);
     return response.data;
   }
 
