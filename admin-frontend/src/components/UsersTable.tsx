@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { User } from '../services/userService';
 import { 
@@ -34,6 +34,23 @@ export default function UsersTable({
 }: UsersTableProps) {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -112,9 +129,6 @@ export default function UsersTable({
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Verification
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -124,7 +138,7 @@ export default function UsersTable({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50">
+              <tr key={user._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
@@ -162,8 +176,8 @@ export default function UsersTable({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
-                    onClick={() => handleToggleStatus(user.id, !user.isActive)}
-                    disabled={actionLoading === user.id}
+                    onClick={() => handleToggleStatus(user._id, !user.isActive)}
+                    disabled={actionLoading === user._id}
                     className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
                       user.isActive
                         ? 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -183,45 +197,23 @@ export default function UsersTable({
                     )}
                   </button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => handleToggleVerification(user.id, !user.isVerified)}
-                    disabled={actionLoading === user.id}
-                    className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.isVerified
-                        ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                        : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                    } transition-colors`}
-                  >
-                    {user.isVerified ? (
-                      <>
-                        <ShieldCheck className="h-3 w-3 mr-1" />
-                        Verified
-                      </>
-                    ) : (
-                      <>
-                        <Shield className="h-3 w-3 mr-1" />
-                        Unverified
-                      </>
-                    )}
-                  </button>
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="relative">
+                  <div className="relative" ref={openDropdown === user._id ? dropdownRef : null}>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        setOpenDropdown(openDropdown === user.id ? null : user.id)
-                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDropdown(openDropdown === user._id ? null : user._id);
+                      }}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                     
-                    {openDropdown === user.id && (
+                    {openDropdown === user._id && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
                         <div className="py-1">
                           <button
@@ -246,7 +238,7 @@ export default function UsersTable({
                           </button>
                           <button
                             onClick={() => {
-                              onDelete(user.id);
+                              onDelete(user._id);
                               setOpenDropdown(null);
                             }}
                             className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
