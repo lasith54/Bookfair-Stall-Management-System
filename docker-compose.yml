@@ -1,0 +1,216 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: bookfair-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: bookfair
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - bookfair-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/bookfair --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./backend/services/auth-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-auth-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - JWT_REFRESH_SECRET=bookfair-refresh-secret-key-2025-change-in-production
+      - JWT_EXPIRE=15m
+      - JWT_REFRESH_EXPIRE=7d
+      - NODE_ENV=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend/services/auth-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+  # Stall Service
+  stall-service:
+    build:
+      context: ./backend/services/stall-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-stall-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - NODE_ENV=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./backend/services/stall-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+  # Reservation Service
+  reservation-service:
+    build:
+      context: ./backend/services/reservation-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-reservation-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - NODE_ENV=development
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      stall-service:
+        condition: service_started
+    volumes:
+      - ./backend/services/reservation-service/src:/app/src
+      - ./backend/shared:/app/shared
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+  # Notification Service
+  notification-service:
+    build:
+      context: ./backend/services/notification-service
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-notification-service
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongodb:27017/bookfair
+      - JWT_SECRET=bookfair-secret-key-2025-change-in-production
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - NODE_ENV=development
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SECURE=false
+      - SMTP_USER=nithilsheshan@gmail.com
+      - SMTP_PASS=ynwfyuktfjjxvjzb
+      - SMTP_FROM=Bookfair Management System <bookifair-reservation-system@gmail.com>
+      - SMTP_FROM_NAME=Bookfair Management System
+      - SMTP_FROM_EMAIL=bookifair-reservation-system@gmail.com
+      - QR_CODE_SECRET=your-secret-key-for-qr-encryption-min-32-chars
+      - QR_CODE_EXPIRY_DAYS=30
+      - QR_CODE_SIZE=300
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      reservation-service:
+        condition: service_started
+    volumes:
+      - ./backend/services/notification-service/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    command: npm run dev
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./backend/services/api-gateway
+      dockerfile: Dockerfile
+      target: development
+    container_name: bookfair-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - STALL_SERVICE_URL=http://stall-service:3002
+      - RESERVATION_SERVICE_URL=http://reservation-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=100
+    depends_on:
+      - auth-service
+    volumes:
+      - ./backend/services/api-gateway/src:/app/src
+      - /app/node_modules
+    networks:
+      - bookfair-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: npm run dev
+
+  # Customer Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bookfair-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - bookfair-network
+
+  # Admin Frontend
+  admin-frontend:
+    build:
+      context: ./admin-frontend
+      dockerfile: Dockerfile
+    container_name: bookfair-admin-frontend
+    restart: unless-stopped
+    ports:
+      - "5174:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - bookfair-network
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+networks:
+  bookfair-network:
+    driver: bridge
