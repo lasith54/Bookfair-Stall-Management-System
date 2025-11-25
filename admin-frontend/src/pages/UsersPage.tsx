@@ -267,7 +267,7 @@ export default function UsersPage() {
             <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl shadow-2xl p-10 mb-8 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold mb-2">
+                  <h1 className="text-4xl font-bold mb-2 text-white">
                     Users Management
                   </h1>
                   <p className="text-lg text-blue-100">

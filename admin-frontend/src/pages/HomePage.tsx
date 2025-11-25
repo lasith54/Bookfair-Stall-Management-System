@@ -56,7 +56,7 @@ export default function HomePage() {
         <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl shadow-2xl p-10 mb-8 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-3">
+              <h1 className="text-4xl font-bold mb-3 text-white">
                 CIBF Admin Dashboard
               </h1>
               {user ? (
