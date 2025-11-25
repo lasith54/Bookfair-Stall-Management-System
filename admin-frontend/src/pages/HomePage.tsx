@@ -50,7 +50,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
-      <Header />
+      <Header title="Admin Dashboard" />
       <main className="w-full px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <div className="bg-gradient-to-r from-blue-900 to-blue-700 rounded-2xl shadow-2xl p-10 mb-8 text-white">

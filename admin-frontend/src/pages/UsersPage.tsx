@@ -228,7 +228,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 w-full">
-      <Header />
+      <Header title="User Management" />
       
       <main className="w-full px-4 sm:px-6 lg:px-8 py-12">
         {/* Check if user is still loading */}
